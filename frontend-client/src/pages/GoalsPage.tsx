@@ -11,7 +11,6 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ userId }) => {
   const [deadline, setDeadline] = useState('');
   const [priorityLevel, setPriorityLevel] = useState('Medium');
   const [message, setMessage] = useState('');
-  const [goalId, setGoalId] = useState('');
 
   // Progress tracking
   const [progressGoalId, setProgressGoalId] = useState('');
@@ -29,7 +28,6 @@ const GoalsPage: React.FC<GoalsPageProps> = ({ userId }) => {
 
     if (response.success && response.goal) {
       setMessage(`Goal created successfully! Goal ID: ${response.goal.goalId}`);
-      setGoalId(response.goal.goalId);
       setProgressGoalId(response.goal.goalId);
     } else {
       setMessage('Failed to create goal');
