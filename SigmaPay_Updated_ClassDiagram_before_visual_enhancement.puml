@@ -1,0 +1,1294 @@
+@startuml SigmaPay_Complete_Architecture_With_Interfaces
+
+' ============================================================================
+' SigmaPay - Complete Architecture with Strict Interface-Based Layering
+' ============================================================================
+' This diagram incorporates:
+' - Original L01 interfaces (I8input, I9output)
+' - Controller interfaces with complete method signatures
+' - 13 GoF design patterns (hidden inside implementations)
+' - Strict interface-based communication between layers
+' - Service and Entity interfaces restored
+' ============================================================================
+
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+
+' ================================
+' L01 Input/Output Interfaces
+' ================================
+
+interface I8input { 
+  void receiveUserRequest(string requestType, string requestData)  
+  void captureUserAction(string userId, string actionType) 
+} 
+
+interface I9output { 
+  void sendResponse(string userId, string responseData)  
+  void displayError(string userId, string errorMessage)  
+} 
+
+' ================================
+' PRESENTATION LAYER - Controllers
+' ================================
+
+package "Presentation Layer (Controller)" as PresentationLayer {
+    
+    ' Facade Pattern - Single entry point (depends on INTERFACES only)
+    class SigmaPayFacade {
+        - accountService: IAccountService
+        - budgetService: IBudgetService
+        - goalService: IGoalService
+        - groupSavingsService: IGroupSavingsService
+        - paymentsService: IPaymentsServiceBL
+        - reportingService: IReportingService
+        - notificationService: INotificationServiceBL
+        
+        + handle(request): Response
+        + createAccount(data): Response
+        + login(credentials): Response
+        + createBudget(plan): Response
+        + createGoal(goal): Response
+        + processPayment(request): Response
+        + generateReport(filter): Report
+        + sendNotification(message): void
+    }
+    
+    ' Controller Interfaces with complete method signatures
+    
+    interface IControllerAuth {
+      boolean ctlCreateAccount(String username, String email, String password, String phoneNumber)
+      boolean ctlUpdateUserInfo(String userId, String newEmail, String newPhoneNumber, String newAddress)
+      boolean ctlDeleteAccount(String userId)
+      boolean ctlChangeUsername(String userId, String newUsername)
+      boolean ctlResetPassword(String userId, String oldPassword, String newPassword)
+      boolean ctlVerifyIdentity(String userId, String verificationCode, String method)
+      IUserAccount ctlGetAccountDetails(String userId)
+      boolean ctlEnableAccount(String userId)
+      boolean ctlDisableAccount(String userId)
+    }
+
+    interface IControllerBudget {
+      IBudgetPlan ctlCreateBudget(String userId, double totalAmount, String startDate, String endDate, List categories)
+      boolean ctlRecordExpense(String userId, double amount, String category, String date, String paymentMethod)
+      boolean ctlSendBudgetAlert(String userId, String alertType, String message)
+    }
+
+    interface IControllerGoals {
+      IFinancialGoal ctlSetGoal(String userId, String goalType, double targetAmount, String deadline, String priorityLevel)
+      IGoalProgress ctlTrackProgress(String userId, String goalId, boolean detailed)
+      IAIRecommendation ctlGetOptimizedGoalPlan(String userId, String financialData, int timeFrame, boolean riskSensitive)
+    }
+
+    interface IControllerGroupSavings {
+      ISavingsGroup ctlCreateGroup(String groupName, List members)
+      boolean ctlAddMember(String groupId, String memberId)
+      boolean ctlProcessDeposit(String groupId, String memberId, double amount)
+      String ctlGenerateGroupReport(String groupId)
+    }
+
+    interface IControllerReports {
+      String ctlGenerateIncomeStatement(String userId)
+      String ctlGenerateMonthlySummary(String userId)
+      boolean ctlExportToPDF(String reportType)
+    }
+
+    interface IControllerPayments {
+      boolean ctlProcessPayment(String userId, String methodId, double amount, String merchantId)
+      boolean ctlRequestRefund(String userId, String transactionId, double amount, String reason)
+      boolean ctlVerifyPaymentMethod(String userId, String methodId, String CVV)
+    }
+
+    interface IControllerNotifications {
+      boolean ctlSendAlert(string userId, string message)
+      boolean ctlSetNotificationPreference(string userId, string preferenceType, boolean isEnabled)
+      List ctlGetNotificationHistory(string userId)
+    }
+
+    interface IControllerInput {
+      void handleRequest(string userId, string requestType, string requestData)
+      void handleAction(string userId, string actionType)
+    }
+
+    interface IControllerOutput {
+      void respond(string userId, string responseData)
+      void fail(string userId, string errorMessage)
+    }
+    
+    ' Main Controller class implementing all interfaces (depends on SERVICE INTERFACES only)
+    class Controller {
+        - accountService: IAccountService
+        - budgetService: IBudgetService
+        - goalService: IGoalService
+        - groupSavingsService: IGroupSavingsService
+        - paymentsService: IPaymentsServiceBL
+        - reportingService: IReportingService
+        - notificationService: INotificationServiceBL
+    }
+    
+    Controller ..|> IControllerAuth
+    Controller ..|> IControllerBudget
+    Controller ..|> IControllerGoals
+    Controller ..|> IControllerGroupSavings
+    Controller ..|> IControllerReports
+    Controller ..|> IControllerPayments
+    Controller ..|> IControllerNotifications
+    Controller ..|> IControllerInput
+    Controller ..|> IControllerOutput
+    
+    ' SigmaPay main class (Facade entry point)
+    class SigmaPay {
+        - facade: SigmaPayFacade
+        - controller: Controller
+        
+        + processRequest(request): Response
+    }
+    
+    ' Relationships - Controllers depend on SERVICE INTERFACES
+    SigmaPay --> SigmaPayFacade
+    SigmaPay --> Controller
+    SigmaPayFacade --> IAccountService
+    SigmaPayFacade --> IBudgetService
+    SigmaPayFacade --> IGoalService
+    SigmaPayFacade --> IGroupSavingsService
+    SigmaPayFacade --> IPaymentsServiceBL
+    SigmaPayFacade --> IReportingService
+    SigmaPayFacade --> INotificationServiceBL
+    Controller --> IAccountService
+    Controller --> IBudgetService
+    Controller --> IGoalService
+    Controller --> IGroupSavingsService
+    Controller --> IPaymentsServiceBL
+    Controller --> IReportingService
+    Controller --> INotificationServiceBL
+    IControllerInput ..|> I8input
+    IControllerOutput ..|> I9output
+}
+
+' ================================
+' BUSINESS/DOMAIN LAYER
+' ================================
+
+package "Business/Domain Layer" as BusinessLayer {
+    
+    ' ========================================================================
+    ' SERVICE INTERFACES (What the Controller Layer sees)
+    ' ========================================================================
+    
+    interface IAccountService {
+        + createAccount(account: IAccount): String
+        + getAccount(accountId: String): IAccount
+        + updateAccount(account: IAccount): void
+        + deleteAccount(accountId: String): void
+        + getUserAccount(userId: String): IUserAccount
+    }
+    
+    interface IBudgetService {
+        + createBudget(plan: IBudgetPlan): String
+        + updateBudget(plan: IBudgetPlan): void
+        + deleteBudget(budgetId: String): void
+        + getBudget(budgetId: String): IBudgetPlan
+        + recordExpense(userId: String, amount: double, category: String): boolean
+        + analyzeSpending(budgetId: String): SpendingAnalysis
+        + getTrends(budgetId: String, period: Period): List<Trend>
+    }
+    
+    interface IGoalService {
+        + createGoal(goal: IFinancialGoal): String
+        + updateGoal(goal: IFinancialGoal): void
+        + trackProgress(goalId: String): IGoalProgress
+        + contributeToGoal(goalId: String, amount: double): void
+        + getOptimizedPlan(userId: String, financialData: String): IAIRecommendation
+    }
+    
+    interface IGroupSavingsService {
+        + createGroup(group: IGroupSavings): String
+        + joinGroup(groupId: String, userId: String): void
+        + contribute(groupId: String, userId: String, amount: double): void
+        + leaveGroup(groupId: String, userId: String): void
+        + generateGroupReport(groupId: String): String
+    }
+    
+    interface IPaymentsServiceBL {
+        + processPayment(payment: IPayment): Response
+        + scheduleRecurringPayment(payment: IPayment, schedule: Schedule): String
+        + cancelPayment(paymentId: String): void
+        + refundPayment(paymentId: String): Response
+        + verifyPaymentMethod(userId: String, methodId: String): boolean
+    }
+    
+    interface IReportingService {
+        + generateReport(filter: ReportFilter, type: String): IReport
+        + generateIncomeStatement(userId: String): String
+        + generateMonthlySummary(userId: String): String
+        + exportToPDF(report: IReport): byte[]
+        + scheduleReport(filter: ReportFilter, schedule: Schedule): String
+    }
+    
+    interface INotificationServiceBL {
+        + sendNotification(notification: INotification): void
+        + sendAlert(userId: String, message: String): boolean
+        + getNotifications(userId: String): List<INotification>
+        + getNotificationHistory(userId: String): List<INotification>
+        + markAsRead(notificationId: String): void
+        + setPreference(userId: String, preferenceType: String, enabled: boolean): boolean
+    }
+    
+    ' ========================================================================
+    ' DOMAIN ENTITY INTERFACES (What Services return to Controllers)
+    ' ========================================================================
+    
+    interface IUserAccount {
+        + getUserId(): String
+        + getCredentials(): ICredentials
+        + getProfile(): IUserProfile
+        + getSecuritySettings(): ISecuritySettings
+        + updateProfile(profile: IUserProfile): void
+    }
+    
+    interface ICredentials {
+        + getUsername(): String
+        + verifyPassword(password: String): boolean
+    }
+    
+    interface IUserProfile {
+        + getEmail(): String
+        + getPhone(): String
+        + updateContact(email: String, phone: String): void
+    }
+    
+    interface ISecuritySettings {
+        + is2FAEnabled(): boolean
+        + enable2FA(): void
+        + disable2FA(): void
+    }
+    
+    interface IAccount {
+        + getAccountId(): String
+        + getUserId(): String
+        + getBalance(): IMoney
+        + deposit(amount: IMoney): void
+        + withdraw(amount: IMoney): void
+    }
+    
+    interface IMoney {
+        + getAmount(): BigDecimal
+        + getCurrency(): ICurrency
+        + add(other: IMoney): IMoney
+        + subtract(other: IMoney): IMoney
+    }
+    
+    interface ICurrency {
+        + getCode(): String
+        + getSymbol(): String
+    }
+    
+    interface ITransaction {
+        + getTransactionId(): String
+        + getAmount(): IMoney
+        + getType(): String
+    }
+    
+    interface IBudgetPlan {
+        + getBudgetId(): String
+        + getTotalAmount(): IMoney
+        + addCategory(category: IBudgetCategoryComponent): void
+        + getCategoryAmount(categoryName: String): IMoney
+    }
+    
+    interface IBudgetCategoryComponent {
+        + getName(): String
+        + getAmount(): IMoney
+        + add(component: IBudgetCategoryComponent): void
+        + remove(component: IBudgetCategoryComponent): void
+    }
+    
+    interface IFinancialGoal {
+        + getGoalId(): String
+        + getTargetAmount(): IMoney
+        + getCurrentAmount(): IMoney
+        + contribute(amount: IMoney): void
+        + getState(): IGoalState
+    }
+    
+    interface IGoalState {
+        + start(goal: IFinancialGoal): void
+        + pause(goal: IFinancialGoal): void
+        + complete(goal: IFinancialGoal): void
+    }
+    
+    interface IPayment {
+        + getPaymentId(): String
+        + getAmount(): IMoney
+        + process(): Response
+        + getState(): IPaymentState
+    }
+    
+    interface IPaymentState {
+        + process(payment: IPayment): void
+        + complete(payment: IPayment): void
+        + fail(payment: IPayment): void
+    }
+    
+    interface IGroupSavings {
+        + getGroupId(): String
+        + getName(): String
+        + getTargetAmount(): IMoney
+        + getCurrentAmount(): IMoney
+        + addMember(userId: String): void
+        + contribute(userId: String, amount: IMoney): void
+    }
+    
+    interface ISavingsGroup {
+        + getGroupId(): String
+        + getGroupName(): String
+        + getTotalSavings(): IMoney
+        + addMember(memberId: String): void
+    }
+    
+    interface IReport {
+        + getReportId(): String
+        + getTitle(): String
+        + exportToPDF(): byte[]
+    }
+    
+    interface INotification {
+        + getNotificationId(): String
+        + getMessage(): String
+        + markAsRead(): void
+    }
+    
+    interface IGoalProgress {
+        + getGoalId(): String
+        + getPercentageComplete(): double
+        + getRemainingAmount(): IMoney
+    }
+    
+    interface IAIRecommendation {
+        + getRecommendationId(): String
+        + getSuggestedAmount(): IMoney
+        + getReasoning(): String
+    }
+    
+    ' ========================================================================
+    ' CONCRETE SERVICE IMPLEMENTATIONS (Internal - use Design Patterns)
+    ' ========================================================================
+    
+    class AccountService {
+        - accountsRepository: IAccountsRepository
+        - userRepository: IUserRepository
+        - passwordManager: PasswordManager
+        
+        + createAccount(account: IAccount): String
+        + getAccount(accountId: String): IAccount
+        + updateAccount(account: IAccount): void
+        + deleteAccount(accountId: String): void
+        + getUserAccount(userId: String): IUserAccount
+    }
+    
+    class AuthenticationService {
+        - userRepository: IUserRepository
+        - passwordManager: PasswordManager
+        - authProxy: AuthProxy
+        - validationChain: ValidationHandler
+        
+        + authenticate(credentials: ICredentials): boolean
+        + verifyIdentity(user: IUserAccount): boolean
+        + enable2FA(user: IUserAccount): void
+    }
+    
+    ' Split Service Implementation (Refactoring Applied)
+    class BudgetService {
+        - budgetRepository: IBudgetRepository
+        - transactionRepository: ITransactionRepository
+        - budgetCreationService: BudgetCreationService
+        - budgetAnalyticsService: BudgetAnalyticsService
+        
+        + createBudget(plan: IBudgetPlan): String
+        + updateBudget(plan: IBudgetPlan): void
+        + deleteBudget(budgetId: String): void
+        + getBudget(budgetId: String): IBudgetPlan
+        + recordExpense(userId: String, amount: double, category: String): boolean
+        + analyzeSpending(budgetId: String): SpendingAnalysis
+        + getTrends(budgetId: String, period: Period): List<Trend>
+    }
+    
+    ' Internal split services (hidden from Controller)
+    class BudgetCreationService {
+        - budgetRepository: IBudgetRepository
+        
+        + createBudget(plan: IBudgetPlan): String
+        + updateBudget(plan: IBudgetPlan): void
+        + deleteBudget(budgetId: String): void
+    }
+    
+    class BudgetAnalyticsService {
+        - budgetRepository: IBudgetRepository
+        - transactionRepository: ITransactionRepository
+        
+        + analyzeSpending(budgetId: String): SpendingAnalysis
+        + getTrends(budgetId: String, period: Period): List<Trend>
+    }
+    
+    class GoalService {
+        - goalRepository: IGoalRepository
+        - notificationManager: NotificationManager
+        
+        + createGoal(goal: IFinancialGoal): String
+        + updateGoal(goal: IFinancialGoal): void
+        + trackProgress(goalId: String): IGoalProgress
+        + contributeToGoal(goalId: String, amount: double): void
+        + getOptimizedPlan(userId: String, financialData: String): IAIRecommendation
+    }
+    
+    class GroupSavingsService {
+        - groupSavingsRepository: IGroupSavingsRepository
+        - notificationManager: NotificationManager
+        
+        + createGroup(group: IGroupSavings): String
+        + joinGroup(groupId: String, userId: String): void
+        + contribute(groupId: String, userId: String, amount: double): void
+        + leaveGroup(groupId: String, userId: String): void
+        + generateGroupReport(groupId: String): String
+    }
+    
+    class PaymentsServiceBL {
+        - paymentRepository: IPaymentRepository
+        - paymentCreator: PaymentCreator
+        - gatewayAdapterFactory: PaymentGatewayAdapterFactory
+        - notificationManager: NotificationManager
+        
+        + processPayment(payment: IPayment): Response
+        + scheduleRecurringPayment(payment: IPayment, schedule: Schedule): String
+        + cancelPayment(paymentId: String): void
+        + refundPayment(paymentId: String): Response
+        + verifyPaymentMethod(userId: String, methodId: String): boolean
+    }
+    
+    class ReportingService {
+        - reportBuilder: ReportBuilder
+        - transactionRepository: ITransactionRepository
+        - budgetRepository: IBudgetRepository
+        - reportFactory: ReportTemplateFactory
+        
+        + generateReport(filter: ReportFilter, type: String): IReport
+        + generateIncomeStatement(userId: String): String
+        + generateMonthlySummary(userId: String): String
+        + exportToPDF(report: IReport): byte[]
+        + scheduleReport(filter: ReportFilter, schedule: Schedule): String
+    }
+    
+    class NotificationsServiceBL {
+        - notificationRepository: INotificationRepository
+        - notificationManager: NotificationManager
+        
+        + sendNotification(notification: INotification): void
+        + sendAlert(userId: String, message: String): boolean
+        + getNotifications(userId: String): List<INotification>
+        + getNotificationHistory(userId: String): List<INotification>
+        + markAsRead(notificationId: String): void
+        + setPreference(userId: String, preferenceType: String, enabled: boolean): boolean
+    }
+    
+    ' Service implementations implement their interfaces
+    IAccountService <|.. AccountService
+    IBudgetService <|.. BudgetService
+    IGoalService <|.. GoalService
+    IGroupSavingsService <|.. GroupSavingsService
+    IPaymentsServiceBL <|.. PaymentsServiceBL
+    IReportingService <|.. ReportingService
+    INotificationServiceBL <|.. NotificationsServiceBL
+    
+    ' Services depend on REPOSITORY INTERFACES (not concrete)
+    AccountService --> IAccountsRepository
+    AccountService --> IUserRepository
+    AuthenticationService --> IUserRepository
+    BudgetService --> IBudgetRepository
+    BudgetService --> ITransactionRepository
+    BudgetCreationService --> IBudgetRepository
+    BudgetAnalyticsService --> IBudgetRepository
+    BudgetAnalyticsService --> ITransactionRepository
+    GoalService --> IGoalRepository
+    GroupSavingsService --> IGroupSavingsRepository
+    PaymentsServiceBL --> IPaymentRepository
+    ReportingService --> ITransactionRepository
+    ReportingService --> IBudgetRepository
+    NotificationsServiceBL --> INotificationRepository
+    
+    ' ========================================================================
+    ' DESIGN PATTERNS (Internal to Service Layer - Hidden from Controllers)
+    ' ========================================================================
+    
+    ' Factory Method Pattern - Payment Creation
+    abstract class PaymentCreator {
+        + {abstract} createPayment(methodType: String): IPayment
+        + processPayment(methodType: String): IPayment
+    }
+    
+    class ConcretePaymentCreator {
+        + createPayment(methodType: String): IPayment
+    }
+    
+    PaymentCreator <|-- ConcretePaymentCreator
+    
+    ' Factory for adapters (hidden inside PaymentsServiceBL)
+    class PaymentGatewayAdapterFactory {
+        + getAdapter(gatewayType: String): IPaymentGatewayAdapter
+    }
+    
+    ' Factory for reports (hidden inside ReportingService)
+    class ReportTemplateFactory {
+        + createReportTemplate(type: String): ReportTemplate
+    }
+    
+    ' Builder Pattern - Report Construction
+    class ReportBuilder {
+        - report: Report
+        + reset(): void
+        + buildHeader(title: String): ReportBuilder
+        + buildSection(name: String, data: Object): ReportBuilder
+        + buildChart(type: String, data: Object): ReportBuilder
+        + buildTotals(totals: Map): ReportBuilder
+        + buildAnalytics(analytics: Object): ReportBuilder
+        + buildFooter(): ReportBuilder
+        + getReport(): IReport
+    }
+    
+    ' Singleton Pattern - Notification Manager
+    class NotificationManager {
+        - {static} instance: NotificationManager
+        - observers: List<INotificationObserver>
+        - scheduler: Scheduler
+        
+        - NotificationManager()
+        + {static} getInstance(): NotificationManager
+        + subscribe(observer: INotificationObserver): void
+        + unsubscribe(observer: INotificationObserver): void
+        + notify(event: NotificationEvent): void
+    }
+    
+    ' Singleton Pattern - Scheduler
+    class Scheduler {
+        - {static} instance: Scheduler
+        - scheduledTasks: Map<String, Task>
+        
+        - Scheduler()
+        + {static} getInstance(): Scheduler
+        + scheduleTask(task: Task, time: DateTime): String
+        + cancelTask(taskId: String): void
+    }
+    
+    ' Adapter Pattern - Payment Gateway Integration
+    interface IPaymentGatewayAdapter {
+        + processTransaction(transaction: ITransaction): Response
+        + refund(transactionId: String): Response
+        + getStatus(transactionId: String): String
+    }
+    
+    class FawryAdapter {
+        - fawryAPI: FawryAPI
+        + processTransaction(transaction: ITransaction): Response
+        + refund(transactionId: String): Response
+        + getStatus(transactionId: String): String
+    }
+    
+    class BankAPIAdapter {
+        - bankAPI: BankAPI
+        + processTransaction(transaction: ITransaction): Response
+        + refund(transactionId: String): Response
+        + getStatus(transactionId: String): String
+    }
+    
+    class VodafoneCashAdapter {
+        - vodafoneAPI: VodafoneAPI
+        + processTransaction(transaction: ITransaction): Response
+        + refund(transactionId: String): Response
+        + getStatus(transactionId: String): String
+    }
+    
+    IPaymentGatewayAdapter <|.. FawryAdapter
+    IPaymentGatewayAdapter <|.. BankAPIAdapter
+    IPaymentGatewayAdapter <|.. VodafoneCashAdapter
+    
+    ' Proxy Pattern - Authentication
+    class AuthProxy {
+        - realAuthService: AuthenticationService
+        - sessionManager: SessionManager
+        
+        + authenticate(credentials: ICredentials): boolean
+        + authorize(user: IUserAccount, resource: String): boolean
+        + verify2FA(user: IUserAccount, code: String): boolean
+        + validateSession(sessionId: String): boolean
+    }
+    
+    ' Composite Pattern - Budget Categories (implements interface)
+    class BudgetCategoryLeaf {
+        - name: String
+        - amount: Money
+        
+        + getName(): String
+        + getAmount(): IMoney
+        + add(component: IBudgetCategoryComponent): void
+        + remove(component: IBudgetCategoryComponent): void
+    }
+    
+    class BudgetCategoryGroup {
+        - name: String
+        - children: List<IBudgetCategoryComponent>
+        
+        + getName(): String
+        + getAmount(): IMoney
+        + add(component: IBudgetCategoryComponent): void
+        + remove(component: IBudgetCategoryComponent): void
+    }
+    
+    IBudgetCategoryComponent <|.. BudgetCategoryLeaf
+    IBudgetCategoryComponent <|.. BudgetCategoryGroup
+    BudgetCategoryGroup o-- IBudgetCategoryComponent
+    
+    ' Flyweight Pattern - Shared Data
+    class CurrencyFlyweight {
+        - {static} currencies: Map<String, Currency>
+        
+        + {static} getCurrency(code: String): ICurrency
+    }
+    
+    class MerchantTypeFlyweight {
+        - {static} merchantTypes: Map<String, MerchantType>
+        
+        + {static} getMerchantType(type: String): MerchantType
+    }
+    
+    ' Strategy Pattern - Payment Processing
+    interface IPaymentStrategy {
+        + execute(payment: IPayment, adapter: IPaymentGatewayAdapter): Response
+        + validate(payment: IPayment): boolean
+        + calculateFees(amount: IMoney): IMoney
+    }
+    
+    class CardStrategy
+    class WalletStrategy
+    class BankStrategy
+    class GroupContributionStrategy
+    
+    IPaymentStrategy <|.. CardStrategy
+    IPaymentStrategy <|.. WalletStrategy
+    IPaymentStrategy <|.. BankStrategy
+    IPaymentStrategy <|.. GroupContributionStrategy
+    
+    ' Observer Pattern - Notifications
+    interface INotificationSubject {
+        + attach(observer: INotificationObserver): void
+        + detach(observer: INotificationObserver): void
+        + notifyObservers(event: Event): void
+    }
+    
+    interface INotificationObserver {
+        + update(event: Event): void
+    }
+    
+    class BudgetObserver
+    class GoalObserver
+    class PaymentObserver
+    class ContributionObserver
+    
+    INotificationObserver <|.. BudgetObserver
+    INotificationObserver <|.. GoalObserver
+    INotificationObserver <|.. PaymentObserver
+    INotificationObserver <|.. ContributionObserver
+    INotificationSubject --> INotificationObserver
+    
+    ' Chain of Responsibility - Validation
+    abstract class ValidationHandler {
+        # nextHandler: ValidationHandler
+        
+        + setNext(handler: ValidationHandler): ValidationHandler
+        + {abstract} validate(request: ValidationRequest): ValidationResult
+        + handle(request: ValidationRequest): ValidationResult
+    }
+    
+    class EmailFormatHandler
+    class DuplicateUserHandler
+    class PasswordStrengthHandler
+    class IdentityVerificationHandler
+    
+    ValidationHandler <|-- EmailFormatHandler
+    ValidationHandler <|-- DuplicateUserHandler
+    ValidationHandler <|-- PasswordStrengthHandler
+    ValidationHandler <|-- IdentityVerificationHandler
+    
+    ' State Pattern - Goal States (implements interface)
+    class ActiveGoalState
+    class PausedGoalState
+    class CompletedGoalState
+    class CancelledGoalState
+    
+    IGoalState <|.. ActiveGoalState
+    IGoalState <|.. PausedGoalState
+    IGoalState <|.. CompletedGoalState
+    IGoalState <|.. CancelledGoalState
+    
+    ' State Pattern - Payment States (implements interface)
+    class PendingPaymentState
+    class ProcessingPaymentState
+    class CompletedPaymentState
+    class FailedPaymentState
+    
+    IPaymentState <|.. PendingPaymentState
+    IPaymentState <|.. ProcessingPaymentState
+    IPaymentState <|.. CompletedPaymentState
+    IPaymentState <|.. FailedPaymentState
+    
+    ' Template Method - Report Generation
+    abstract class ReportTemplate {
+        + generate(): IReport
+        # {abstract} prepareHeader(): void
+        # {abstract} collectData(): void
+        # {abstract} formatContent(): void
+        # {abstract} generateSummary(): void
+        # {abstract} exportPDF(): void
+    }
+    
+    class MonthlyReport
+    class IncomeStatementReport
+    class GroupSavingsReport
+    
+    ReportTemplate <|-- MonthlyReport
+    ReportTemplate <|-- IncomeStatementReport
+    ReportTemplate <|-- GroupSavingsReport
+    
+    ' ========================================================================
+    ' CONCRETE DOMAIN ENTITIES (Implement Entity Interfaces)
+    ' ========================================================================
+    
+    class UserAccount {
+        - userId: String
+        - credentials: Credentials
+        - profile: UserProfile
+        - securitySettings: SecuritySettings
+        - createdAt: DateTime
+        - lastLogin: DateTime
+    }
+    
+    class Credentials {
+        - username: String
+        - passwordHash: String
+    }
+    
+    class UserProfile {
+        - email: String
+        - phone: String
+        - address: Address
+        - firstName: String
+        - lastName: String
+    }
+    
+    class SecuritySettings {
+        - twoFactorEnabled: boolean
+        - accountStatus: String
+        - lastPasswordChange: DateTime
+        - failedLoginAttempts: int
+    }
+    
+    class Address {
+        - street: String
+        - city: String
+        - country: String
+        - postalCode: String
+    }
+    
+    ' Entity implementations implement their interfaces
+    IUserAccount <|.. UserAccount
+    ICredentials <|.. Credentials
+    IUserProfile <|.. UserProfile
+    ISecuritySettings <|.. SecuritySettings
+    
+    UserAccount --> Credentials
+    UserAccount --> UserProfile
+    UserAccount --> SecuritySettings
+    UserProfile --> Address
+    
+    class Money {
+        - amount: BigDecimal
+        - currency: Currency
+    }
+    
+    class Currency {
+        - code: String
+        - symbol: String
+        - exchangeRate: double
+    }
+    
+    IMoney <|.. Money
+    ICurrency <|.. Currency
+    Money --> Currency
+    
+    class Account {
+        - accountId: String
+        - userId: String
+        - accountType: String
+        - balance: Money
+        - accountNumber: String
+        - createdAt: DateTime
+    }
+    
+    IAccount <|.. Account
+    Account --> Money
+    
+    class Transaction {
+        - transactionId: String
+        - accountId: String
+        - amount: Money
+        - transactionType: String
+        - merchantType: MerchantType
+        - timestamp: DateTime
+        - description: String
+    }
+    
+    class MerchantType {
+        - type: String
+        - category: String
+    }
+    
+    ITransaction <|.. Transaction
+    Transaction --> Money
+    Transaction --> MerchantType
+    
+    class BudgetPlan {
+        - budgetId: String
+        - userId: String
+        - name: String
+        - totalAmount: Money
+        - startDate: DateTime
+        - endDate: DateTime
+        - rootCategory: BudgetCategoryGroup
+    }
+    
+    IBudgetPlan <|.. BudgetPlan
+    BudgetPlan --> Money
+    BudgetPlan --> BudgetCategoryGroup
+    
+    class FinancialGoal {
+        - goalId: String
+        - userId: String
+        - name: String
+        - targetAmount: Money
+        - currentAmount: Money
+        - deadline: DateTime
+        - state: IGoalState
+    }
+    
+    IFinancialGoal <|.. FinancialGoal
+    FinancialGoal --> Money
+    FinancialGoal --> IGoalState
+    
+    abstract class Payment {
+        # paymentId: String
+        # accountId: String
+        # amount: Money
+        # timestamp: DateTime
+        # state: IPaymentState
+        # strategy: IPaymentStrategy
+    }
+    
+    class CardPayment {
+        - cardNumber: String
+        - cvv: String
+        - expiryDate: DateTime
+    }
+    
+    class WalletPayment {
+        - walletId: String
+    }
+    
+    class BankPayment {
+        - bankAccount: String
+        - routingNumber: String
+    }
+    
+    class GroupContributionPayment {
+        - groupId: String
+        - contributionId: String
+    }
+    
+    IPayment <|.. Payment
+    Payment <|-- CardPayment
+    Payment <|-- WalletPayment
+    Payment <|-- BankPayment
+    Payment <|-- GroupContributionPayment
+    Payment --> Money
+    Payment --> IPaymentState
+    Payment --> IPaymentStrategy
+    
+    class GroupSavings {
+        - groupId: String
+        - name: String
+        - targetAmount: Money
+        - currentAmount: Money
+        - members: List<String>
+        - createdAt: DateTime
+    }
+    
+    class SavingsGroup {
+        - groupId: String
+        - groupName: String
+        - members: List<String>
+        - totalSavings: Money
+    }
+    
+    IGroupSavings <|.. GroupSavings
+    ISavingsGroup <|.. SavingsGroup
+    GroupSavings --> Money
+    SavingsGroup --> Money
+    
+    class Report {
+        - reportId: String
+        - title: String
+        - generatedAt: DateTime
+        - sections: List<ReportSection>
+        - charts: List<Chart>
+        - summary: String
+    }
+    
+    class ReportSection {
+        - name: String
+        - content: String
+        - data: Object
+    }
+    
+    class Chart {
+        - type: String
+        - data: Object
+        - config: ChartConfig
+    }
+    
+    IReport <|.. Report
+    Report --> ReportSection
+    Report --> Chart
+    
+    class Notification {
+        - notificationId: String
+        - userId: String
+        - message: String
+        - type: String
+        - timestamp: DateTime
+        - isRead: boolean
+    }
+    
+    INotification <|.. Notification
+    
+    class GoalProgress {
+        - goalId: String
+        - currentAmount: Money
+        - targetAmount: Money
+        - percentageComplete: double
+        - remainingAmount: Money
+        - estimatedCompletionDate: DateTime
+    }
+    
+    IGoalProgress <|.. GoalProgress
+    GoalProgress --> Money
+    
+    class AIRecommendation {
+        - recommendationId: String
+        - userId: String
+        - goalId: String
+        - suggestedAmount: Money
+        - frequency: String
+        - reasoning: String
+        - confidence: double
+    }
+    
+    IAIRecommendation <|.. AIRecommendation
+    AIRecommendation --> Money
+    
+    ' ReportFilter Parameter Object
+    class ReportFilter {
+        - startDate: DateTime
+        - endDate: DateTime
+        - category: String
+        - type: String
+        - minAmount: Money
+        - maxAmount: Money
+    }
+    
+    ReportFilter --> Money
+    
+    ' Extracted PasswordManager
+    class PasswordManager {
+        - passwordHasher: PasswordHasher
+        - passwordPolicy: PasswordPolicy
+    }
+}
+
+' ================================
+' DATA ACCESS LAYER
+' ================================
+
+package "Data Access Layer" as DataLayer {
+    
+    ' Data Access Interface
+    interface IDataAccessLayer {
+        + connect(): Connection
+        + disconnect(): void
+        + executeQuery(query: String): ResultSet
+        + executeUpdate(query: String): int
+        + beginTransaction(): void
+        + commitTransaction(): void
+        + rollbackTransaction(): void
+    }
+    
+    ' Repository Interfaces (What Services see)
+    interface IRepository<T> {
+        + save(entity: T): String
+        + findById(id: String): T
+        + update(entity: T): void
+        + delete(id: String): void
+        + findAll(): List<T>
+    }
+    
+    interface IAccountsRepository {
+        + save(account: IAccount): String
+        + findById(accountId: String): IAccount
+        + findByUserId(userId: String): List<IAccount>
+        + update(account: IAccount): void
+        + delete(accountId: String): void
+    }
+    
+    interface IUserRepository {
+        + save(user: IUserAccount): String
+        + findById(userId: String): IUserAccount
+        + findByUsername(username: String): IUserAccount
+        + findByEmail(email: String): IUserAccount
+        + update(user: IUserAccount): void
+        + delete(userId: String): void
+    }
+    
+    interface ITransactionRepository {
+        + save(transaction: ITransaction): String
+        + findById(transactionId: String): ITransaction
+        + findByAccountId(accountId: String): List<ITransaction>
+        + findByDateRange(accountId: String, start: DateTime, end: DateTime): List<ITransaction>
+        + findByFilter(filter: ReportFilter): List<ITransaction>
+        + update(transaction: ITransaction): void
+        + delete(transactionId: String): void
+    }
+    
+    interface IBudgetRepository {
+        + save(budget: IBudgetPlan): String
+        + findById(budgetId: String): IBudgetPlan
+        + findByUserId(userId: String): List<IBudgetPlan>
+        + findActive(userId: String): IBudgetPlan
+        + update(budget: IBudgetPlan): void
+        + delete(budgetId: String): void
+    }
+    
+    interface IGoalRepository {
+        + save(goal: IFinancialGoal): String
+        + findById(goalId: String): IFinancialGoal
+        + findByUserId(userId: String): List<IFinancialGoal>
+        + findActiveGoals(userId: String): List<IFinancialGoal>
+        + update(goal: IFinancialGoal): void
+        + delete(goalId: String): void
+    }
+    
+    interface IPaymentRepository {
+        + save(payment: IPayment): String
+        + findById(paymentId: String): IPayment
+        + findByAccountId(accountId: String): List<IPayment>
+        + findPending(): List<IPayment>
+        + update(payment: IPayment): void
+        + delete(paymentId: String): void
+    }
+    
+    interface IGroupSavingsRepository {
+        + save(group: IGroupSavings): String
+        + findById(groupId: String): IGroupSavings
+        + findByMember(userId: String): List<IGroupSavings>
+        + update(group: IGroupSavings): void
+        + delete(groupId: String): void
+    }
+    
+    interface INotificationRepository {
+        + save(notification: INotification): String
+        + findById(notificationId: String): INotification
+        + findByUserId(userId: String): List<INotification>
+        + findUnread(userId: String): List<INotification>
+        + update(notification: INotification): void
+        + delete(notificationId: String): void
+    }
+    
+    ' Concrete Repository Implementations (depend on IDataAccessLayer)
+    class AccountsRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class UserRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class TransactionRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class BudgetRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class GoalRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class PaymentRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class GroupSavingsRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    class NotificationRepositoryImpl {
+        - dataAccessLayer: IDataAccessLayer
+    }
+    
+    ' Repository implementations implement their interfaces
+    IRepository <|.. IAccountsRepository
+    IRepository <|.. IUserRepository
+    IRepository <|.. ITransactionRepository
+    IRepository <|.. IBudgetRepository
+    IRepository <|.. IGoalRepository
+    IRepository <|.. IPaymentRepository
+    IRepository <|.. IGroupSavingsRepository
+    IRepository <|.. INotificationRepository
+    
+    IAccountsRepository <|.. AccountsRepositoryImpl
+    IUserRepository <|.. UserRepositoryImpl
+    ITransactionRepository <|.. TransactionRepositoryImpl
+    IBudgetRepository <|.. BudgetRepositoryImpl
+    IGoalRepository <|.. GoalRepositoryImpl
+    IPaymentRepository <|.. PaymentRepositoryImpl
+    IGroupSavingsRepository <|.. GroupSavingsRepositoryImpl
+    INotificationRepository <|.. NotificationRepositoryImpl
+    
+    ' Repositories depend on IDataAccessLayer (interface, not concrete)
+    AccountsRepositoryImpl --> IDataAccessLayer
+    UserRepositoryImpl --> IDataAccessLayer
+    TransactionRepositoryImpl --> IDataAccessLayer
+    BudgetRepositoryImpl --> IDataAccessLayer
+    GoalRepositoryImpl --> IDataAccessLayer
+    PaymentRepositoryImpl --> IDataAccessLayer
+    GroupSavingsRepositoryImpl --> IDataAccessLayer
+    NotificationRepositoryImpl --> IDataAccessLayer
+    
+    ' Database Connection Pool (Singleton)
+    class DatabaseConnectionPool {
+        - {static} instance: DatabaseConnectionPool
+        - connections: Queue<Connection>
+        - maxConnections: int
+        
+        - DatabaseConnectionPool()
+        + {static} getInstance(): DatabaseConnectionPool
+        + getConnection(): Connection
+        + releaseConnection(conn: Connection): void
+    }
+    
+    ' Concrete implementation of IDataAccessLayer
+    class DataAccessLayerImpl {
+        - connectionPool: DatabaseConnectionPool
+    }
+    
+    IDataAccessLayer <|.. DataAccessLayerImpl
+    DataAccessLayerImpl --> DatabaseConnectionPool
+}
+
+' ================================
+' CROSS-CUTTING CONCERNS
+' ================================
+
+package "Cross-Cutting Concerns" as CrossCutting {
+    
+    class SessionManager {
+        - activeSessions: Map<String, Session>
+    }
+    
+    class PasswordHasher {
+        + hash(password: String, salt: String): String
+        + verify(password: String, hash: String): boolean
+        + generateSalt(): String
+    }
+    
+    class PasswordPolicy {
+        - minLength: int
+        - requireUppercase: boolean
+        - requireLowercase: boolean
+        - requireDigits: boolean
+        - requireSpecialChars: boolean
+    }
+    
+    class ValidationRequest {
+        - data: Map<String, Object>
+    }
+    
+    class ValidationResult {
+        - valid: boolean
+        - errors: List<String>
+    }
+    
+    class Event {
+        - eventType: String
+        - data: Object
+        - timestamp: DateTime
+    }
+    
+    class NotificationEvent {
+        - userId: String
+        - message: String
+        - priority: String
+    }
+    
+    Event <|-- NotificationEvent
+    
+    PasswordManager --> PasswordHasher
+    PasswordManager --> PasswordPolicy
+    AuthProxy --> SessionManager
+}
+
+' ================================
+' EXTERNAL SYSTEMS
+' ================================
+
+package "External Systems" as ExternalSystems {
+    
+    class FawryAPI <<external>> {
+        + processPayment(data: Object): Response
+        + getTransactionStatus(id: String): String
+    }
+    
+    class BankAPI <<external>> {
+        + transfer(from: String, to: String, amount: double): Response
+        + getBalance(account: String): double
+    }
+    
+    class VodafoneAPI <<external>> {
+        + sendMoney(from: String, to: String, amount: double): Response
+        + checkBalance(wallet: String): double
+    }
+    
+    class EmailService <<external>> {
+        + sendEmail(to: String, subject: String, body: String): void
+    }
+    
+    class SMSService <<external>> {
+        + sendSMS(to: String, message: String): void
+    }
+}
+
+' External system connections
+FawryAdapter --> FawryAPI
+BankAPIAdapter --> BankAPI
+VodafoneCashAdapter --> VodafoneAPI
+NotificationManager --> EmailService
+NotificationManager --> SMSService
+
+@enduml
