@@ -56,27 +56,29 @@ const styles: { [key: string]: React.CSSProperties } = {
     minHeight: '100vh',
     display: 'flex',
     flexDirection: 'column',
-    backgroundColor: '#fafafa',
+    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
   },
   main: {
     flex: 1,
-    paddingBottom: '60px',
+    paddingBottom: '80px',
   },
   footer: {
-    backgroundColor: '#333',
+    background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
     color: 'white',
-    padding: '20px',
+    padding: '30px 20px',
     textAlign: 'center',
     marginTop: 'auto',
+    boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)',
   },
   footerText: {
-    margin: '5px 0',
-    fontSize: '14px',
+    margin: '8px 0',
+    fontSize: '15px',
+    fontWeight: '500',
   },
   footerSubtext: {
-    margin: '5px 0',
-    fontSize: '12px',
-    opacity: 0.7,
+    margin: '8px 0',
+    fontSize: '13px',
+    opacity: 0.8,
   },
 };
 
