@@ -19,6 +19,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess }) => {
     if (response.success) {
       setMessage('Account created successfully! You can now login.');
       // For mock purposes, we'll auto-login by generating a userId
+      // NOTE: In production, use crypto.randomUUID() or proper auth token
       const mockUserId = 'user-' + Date.now();
       setTimeout(() => onLoginSuccess(mockUserId), 1500);
     } else {

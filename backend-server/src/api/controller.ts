@@ -39,7 +39,7 @@ export class Controller {
         userId,
         credentials: {
           username,
-          passwordHash: password, // In production, hash this!
+          passwordHash: password, // NOTE: In production, hash with bcrypt/argon2!
         },
         profile: {
           email,
@@ -235,7 +235,7 @@ export class Controller {
   }
 
   ctlVerifyPaymentMethod(userId: string, methodId: string, CVV: string): boolean {
-    // Mock verification
+    // Mock verification - in production, use proper payment gateway validation
     return CVV.length === 3;
   }
 

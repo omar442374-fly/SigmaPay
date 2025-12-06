@@ -36,7 +36,7 @@ class ApiClient {
       const data = await response.json();
       return data;
     } catch (error) {
-      console.error('API request failed:', error);
+      console.error('API request failed:', error); // TODO: Replace with proper logging service in production
       return { success: false, message: 'Network error' };
     }
   }
