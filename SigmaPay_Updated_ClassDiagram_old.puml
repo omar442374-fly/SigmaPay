@@ -1,41 +1,24 @@
-@startuml SigmaPay_Complete_Architecture
+@startuml SigmaPay_Updated_Class_Diagram
 
 ' ============================================================================
-' SigmaPay - Complete Architecture with Design Patterns
+' SigmaPay - Updated Class Diagram with Design Patterns
 ' ============================================================================
-' This diagram incorporates:
-' - Original L01 interfaces (I8input, I9output)
-' - Controller interfaces with complete method signatures
-' - 13 GoF design patterns
-' - Refactoring improvements
-' - Clear layer separation
+' This diagram incorporates 12 GoF design patterns and refactoring techniques
+' Based on: Deliverable1_Final_Report.txt and Arch.drawio architecture
+' Layers: Presentation (Controller), Business Domain, Data Access
 ' ============================================================================
 
 skinparam packageStyle rectangle
 skinparam linetype ortho
 skinparam classAttributeIconSize 0
 
-' ================================
-' L01 Input/Output Interfaces
-' ================================
-
-interface I8input { 
-  void receiveUserRequest(string requestType, string requestData)  
-  void captureUserAction(string userId, string actionType) 
-} 
-
-interface I9output { 
-  void sendResponse(string userId, string responseData)  
-  void displayError(string userId, string errorMessage)  
-} 
-
-' ================================
-' PRESENTATION LAYER - Controllers
-' ================================
+' ============================================================================
+' PRESENTATION LAYER - Controllers (Facade Pattern)
+' ============================================================================
 
 package "Presentation Layer (Controller)" as PresentationLayer {
     
-    ' Facade Pattern - Single entry point (NEW PATTERN)
+    ' Facade Pattern - Single entry point
     class SigmaPayFacade {
         - accountService: AccountService
         - budgetService: BudgetCreationService
@@ -46,7 +29,6 @@ package "Presentation Layer (Controller)" as PresentationLayer {
         - reportingService: ReportingService
         - notificationService: NotificationsServiceBL
         
-        + handle(request): Response
         + createAccount(data): Response
         + login(credentials): Response
         + createBudget(plan): Response
@@ -54,138 +36,82 @@ package "Presentation Layer (Controller)" as PresentationLayer {
         + processPayment(request): Response
         + generateReport(filter): Report
         + sendNotification(message): void
+        + handle(request): Response
     }
     
-    ' Controller Interfaces with complete method signatures
-    
-    interface IControllerAuth {
-      boolean ctlCreateAccount(String username, String email, String password, String phoneNumber)
-      boolean ctlUpdateUserInfo(String userId, String newEmail, String newPhoneNumber, String newAddress)
-      boolean ctlDeleteAccount(String userId)
-      boolean ctlChangeUsername(String userId, String newUsername)
-      boolean ctlResetPassword(String userId, String oldPassword, String newPassword)
-      boolean ctlVerifyIdentity(String userId, String verificationCode, String method)
-      UserAccount ctlGetAccountDetails(String userId)
-      boolean ctlEnableAccount(String userId)
-      boolean ctlDisableAccount(String userId)
-    }
-
-    interface IControllerBudget {
-      BudgetPlan ctlCreateBudget(String userId, double totalAmount, String startDate, String endDate, List categories)
-      boolean ctlRecordExpense(String userId, double amount, String category, String date, String paymentMethod)
-      boolean ctlSendBudgetAlert(String userId, String alertType, String message)
-    }
-
-    interface IControllerGoals {
-      FinancialGoal ctlSetGoal(String userId, String goalType, double targetAmount, String deadline, String priorityLevel)
-      GoalProgress ctlTrackProgress(String userId, String goalId, boolean detailed)
-      AIRecommendation ctlGetOptimizedGoalPlan(String userId, String financialData, int timeFrame, boolean riskSensitive)
-    }
-
-    interface IControllerGroupSavings {
-      SavingsGroup ctlCreateGroup(String groupName, List members)
-      boolean ctlAddMember(String groupId, String memberId)
-      boolean ctlProcessDeposit(String groupId, String memberId, double amount)
-      String ctlGenerateGroupReport(String groupId)
-    }
-
-    interface IControllerReports {
-      String ctlGenerateIncomeStatement(String userId)
-      String ctlGenerateMonthlySummary(String userId)
-      boolean ctlExportToPDF(String reportType)
-    }
-
-    interface IControllerPayments {
-      boolean ctlProcessPayment(String userId, String methodId, double amount, String merchantId)
-      boolean ctlRequestRefund(String userId, String transactionId, double amount, String reason)
-      boolean ctlVerifyPaymentMethod(String userId, String methodId, String CVV)
-    }
-
-    interface IControllerNotifications {
-      boolean ctlSendAlert(string userId, string message)
-      boolean ctlSetNotificationPreference(string userId, string preferenceType, boolean isEnabled)
-      List ctlGetNotificationHistory(string userId)
-    }
-
-    interface IControllerInput {
-      void handleRequest(string userId, string requestType, string requestData)
-      void handleAction(string userId, string actionType)
-    }
-
-    interface IControllerOutput {
-      void respond(string userId, string responseData)
-      void fail(string userId, string errorMessage)
+    ' Original Controllers (now wrapped by Facade)
+    class IControllerAuth {
+        - authProxy: AuthProxy
+        - validationChain: ValidationHandler
+        + ctlCreateAccount()
+        + ctlLogin()
+        + ctlLogout()
     }
     
-    ' Main Controller class implementing all interfaces
-    class Controller
-    Controller ..|> IControllerAuth
-    Controller ..|> IControllerBudget
-    Controller ..|> IControllerGoals
-    Controller ..|> IControllerGroupSavings
-    Controller ..|> IControllerReports
-    Controller ..|> IControllerPayments
-    Controller ..|> IControllerNotifications
-    Controller ..|> IControllerInput
-    Controller ..|> IControllerOutput
-    
-    ' SigmaPay main class (Facade entry point)
-    class SigmaPay {
-        - facade: SigmaPayFacade
-        - controller: Controller
-        
-        + processRequest(request): Response
+    class IControllerAccounts {
+        - accountService: AccountService
+        + ctlGetAccountDetails()
+        + ctlUpdateAccount()
+        + ctlDeleteAccount()
     }
     
-    ' Proxy Pattern - Authentication (NEW PATTERN)
-    class AuthProxy {
-        - realAuthService: AuthenticationService
-        - sessionManager: SessionManager
-        
-        + authenticate(credentials: Credentials): boolean
-        + authorize(user: User, resource: String): boolean
-        + verify2FA(user: User, code: String): boolean
-        + validateSession(sessionId: String): boolean
+    class IControllerBudget {
+        - budgetCreationService: BudgetCreationService
+        - budgetAnalytics: BudgetAnalyticsService
+        + ctlCreateBudget()
+        + ctlUpdateBudget()
+        + ctlGetBudgetAnalytics()
     }
     
-    ' Chain of Responsibility - Validation (NEW PATTERN)
-    abstract class ValidationHandler {
-        # nextHandler: ValidationHandler
-        
-        + setNext(handler: ValidationHandler): ValidationHandler
-        + {abstract} validate(request: ValidationRequest): ValidationResult
-        + handle(request: ValidationRequest): ValidationResult
+    class IControllerGoals {
+        - goalService: GoalService
+        + ctlCreateGoal()
+        + ctlUpdateGoal()
+        + ctlTrackProgress()
     }
     
-    class EmailFormatHandler
-    class DuplicateUserHandler
-    class PasswordStrengthHandler
-    class IdentityVerificationHandler
+    class IControllerPayments {
+        - paymentService: PaymentsServiceBL
+        - paymentCreator: PaymentCreator
+        + ctlProcessPayment()
+        + ctlSchedulePayment()
+        + ctlGetPaymentHistory()
+    }
     
-    ValidationHandler <|-- EmailFormatHandler
-    ValidationHandler <|-- DuplicateUserHandler
-    ValidationHandler <|-- PasswordStrengthHandler
-    ValidationHandler <|-- IdentityVerificationHandler
+    class IControllerReports {
+        - reportingService: ReportingService
+        - reportBuilder: ReportBuilder
+        + ctlGenerateReport()
+        + ctlExportToPDF()
+    }
     
-    ' Relationships
-    SigmaPay --> SigmaPayFacade
-    SigmaPay --> Controller
+    class IControllerNotifications {
+        - notificationManager: NotificationManager
+        + ctlSendNotification()
+        + ctlGetNotifications()
+    }
+    
+    class IControllerGroupSavings {
+        - groupSavingsService: GroupSavingsService
+        + ctlCreateGroup()
+        + ctlJoinGroup()
+        + ctlContribute()
+    }
+    
+    ' Facade uses all controllers
     SigmaPayFacade --> IControllerAuth
+    SigmaPayFacade --> IControllerAccounts
     SigmaPayFacade --> IControllerBudget
     SigmaPayFacade --> IControllerGoals
-    SigmaPayFacade --> IControllerGroupSavings
-    SigmaPayFacade --> IControllerReports
     SigmaPayFacade --> IControllerPayments
+    SigmaPayFacade --> IControllerReports
     SigmaPayFacade --> IControllerNotifications
-    IControllerAuth ..> AuthProxy
-    IControllerAuth ..> ValidationHandler
-    IControllerInput ..|> I8input
-    IControllerOutput ..|> I9output
+    SigmaPayFacade --> IControllerGroupSavings
 }
 
-' ================================
+' ============================================================================
 ' BUSINESS/DOMAIN LAYER
-' ================================
+' ============================================================================
 
 package "Business/Domain Layer" as BusinessLayer {
     
@@ -193,7 +119,7 @@ package "Business/Domain Layer" as BusinessLayer {
     ' CREATIONAL PATTERNS
     ' ========================================================================
     
-    ' Factory Method Pattern - Payment Creation (NEW PATTERN)
+    ' Factory Method Pattern - Payment Creation
     abstract class PaymentCreator {
         + {abstract} createPayment(methodType: String): Payment
         + processPayment(methodType: String): Payment
@@ -205,7 +131,7 @@ package "Business/Domain Layer" as BusinessLayer {
     
     PaymentCreator <|-- ConcretePaymentCreator
     
-    ' Builder Pattern - Report Construction (NEW PATTERN)
+    ' Builder Pattern - Report Construction
     class ReportBuilder {
         - report: Report
         + reset(): void
@@ -218,7 +144,7 @@ package "Business/Domain Layer" as BusinessLayer {
         + getReport(): Report
     }
     
-    ' Singleton Pattern - Notification Manager (NEW PATTERN)
+    ' Singleton Pattern - Notification Manager
     class NotificationManager {
         - {static} instance: NotificationManager
         - observers: List<NotificationObserver>
@@ -232,7 +158,7 @@ package "Business/Domain Layer" as BusinessLayer {
         + scheduleNotification(notification: Notification, time: DateTime): void
     }
     
-    ' Singleton Pattern - Scheduler (NEW PATTERN)
+    ' Singleton Pattern - Scheduler
     class Scheduler {
         - {static} instance: Scheduler
         - scheduledTasks: Map<String, Task>
@@ -248,7 +174,7 @@ package "Business/Domain Layer" as BusinessLayer {
     ' STRUCTURAL PATTERNS
     ' ========================================================================
     
-    ' Adapter Pattern - Payment Gateway Integration (NEW PATTERN)
+    ' Adapter Pattern - Payment Gateway Integration
     interface PaymentGatewayAdapter {
         + processTransaction(transaction: Transaction): Response
         + refund(transactionId: String): Response
@@ -280,7 +206,27 @@ package "Business/Domain Layer" as BusinessLayer {
     PaymentGatewayAdapter <|.. BankAPIAdapter
     PaymentGatewayAdapter <|.. VodafoneCashAdapter
     
-    ' Composite Pattern - Budget Categories (NEW PATTERN)
+    ' Proxy Pattern - Authentication & Authorization
+    class AuthProxy {
+        - realAuthService: AuthenticationService
+        - sessionManager: SessionManager
+        
+        + authenticate(credentials: Credentials): boolean
+        + authorize(user: User, resource: String): boolean
+        + verify2FA(user: User, code: String): boolean
+        + validateSession(sessionId: String): boolean
+        + resetPassword(user: User, newPassword: String): boolean
+    }
+    
+    class AuthenticationService {
+        + authenticate(credentials: Credentials): boolean
+        + verifyIdentity(user: User): boolean
+        + enable2FA(user: User): void
+    }
+    
+    AuthProxy --> AuthenticationService
+    
+    ' Composite Pattern - Budget Categories
     abstract class BudgetCategoryComponent {
         # name: String
         # amount: Money
@@ -314,7 +260,7 @@ package "Business/Domain Layer" as BusinessLayer {
     BudgetCategoryComponent <|-- BudgetCategoryGroup
     BudgetCategoryGroup o-- BudgetCategoryComponent
     
-    ' Flyweight Pattern - Shared Data (NEW PATTERN)
+    ' Flyweight Pattern - Shared Currency and Merchant Data
     class CurrencyFlyweight {
         - {static} currencies: Map<String, Currency>
         
@@ -349,24 +295,43 @@ package "Business/Domain Layer" as BusinessLayer {
     ' BEHAVIORAL PATTERNS
     ' ========================================================================
     
-    ' Strategy Pattern - Payment Processing (NEW PATTERN)
+    ' Strategy Pattern - Payment Processing Strategies
     interface PaymentStrategy {
         + execute(payment: Payment, adapter: PaymentGatewayAdapter): Response
         + validate(payment: Payment): boolean
         + calculateFees(amount: Money): Money
     }
     
-    class CardStrategy
-    class WalletStrategy
-    class BankStrategy
-    class GroupContributionStrategy
+    class CardStrategy {
+        + execute(payment: Payment, adapter: PaymentGatewayAdapter): Response
+        + validate(payment: Payment): boolean
+        + calculateFees(amount: Money): Money
+    }
+    
+    class WalletStrategy {
+        + execute(payment: Payment, adapter: PaymentGatewayAdapter): Response
+        + validate(payment: Payment): boolean
+        + calculateFees(amount: Money): Money
+    }
+    
+    class BankStrategy {
+        + execute(payment: Payment, adapter: PaymentGatewayAdapter): Response
+        + validate(payment: Payment): boolean
+        + calculateFees(amount: Money): Money
+    }
+    
+    class GroupContributionStrategy {
+        + execute(payment: Payment, adapter: PaymentGatewayAdapter): Response
+        + validate(payment: Payment): boolean
+        + calculateFees(amount: Money): Money
+    }
     
     PaymentStrategy <|.. CardStrategy
     PaymentStrategy <|.. WalletStrategy
     PaymentStrategy <|.. BankStrategy
     PaymentStrategy <|.. GroupContributionStrategy
     
-    ' Observer Pattern - Notifications (NEW PATTERN)
+    ' Observer Pattern - Event-driven Notifications
     interface NotificationSubject {
         + attach(observer: NotificationObserver): void
         + detach(observer: NotificationObserver): void
@@ -377,10 +342,21 @@ package "Business/Domain Layer" as BusinessLayer {
         + update(event: Event): void
     }
     
-    class BudgetObserver
-    class GoalObserver
-    class PaymentObserver
-    class ContributionObserver
+    class BudgetObserver {
+        + update(event: Event): void
+    }
+    
+    class GoalObserver {
+        + update(event: Event): void
+    }
+    
+    class PaymentObserver {
+        + update(event: Event): void
+    }
+    
+    class ContributionObserver {
+        + update(event: Event): void
+    }
     
     NotificationObserver <|.. BudgetObserver
     NotificationObserver <|.. GoalObserver
@@ -388,7 +364,37 @@ package "Business/Domain Layer" as BusinessLayer {
     NotificationObserver <|.. ContributionObserver
     NotificationSubject --> NotificationObserver
     
-    ' State Pattern - Goal States (NEW PATTERN)
+    ' Chain of Responsibility - Validation Chain
+    abstract class ValidationHandler {
+        # nextHandler: ValidationHandler
+        
+        + setNext(handler: ValidationHandler): ValidationHandler
+        + {abstract} validate(request: ValidationRequest): ValidationResult
+        + handle(request: ValidationRequest): ValidationResult
+    }
+    
+    class EmailFormatHandler {
+        + validate(request: ValidationRequest): ValidationResult
+    }
+    
+    class DuplicateUserHandler {
+        + validate(request: ValidationRequest): ValidationResult
+    }
+    
+    class PasswordStrengthHandler {
+        + validate(request: ValidationRequest): ValidationResult
+    }
+    
+    class IdentityVerificationHandler {
+        + validate(request: ValidationRequest): ValidationResult
+    }
+    
+    ValidationHandler <|-- EmailFormatHandler
+    ValidationHandler <|-- DuplicateUserHandler
+    ValidationHandler <|-- PasswordStrengthHandler
+    ValidationHandler <|-- IdentityVerificationHandler
+    
+    ' State Pattern - Goal States
     interface GoalState {
         + start(goal: FinancialGoal): void
         + pause(goal: FinancialGoal): void
@@ -396,17 +402,40 @@ package "Business/Domain Layer" as BusinessLayer {
         + cancel(goal: FinancialGoal): void
     }
     
-    class ActiveGoalState
-    class PausedGoalState
-    class CompletedGoalState
-    class CancelledGoalState
+    class ActiveGoalState {
+        + start(goal: FinancialGoal): void
+        + pause(goal: FinancialGoal): void
+        + complete(goal: FinancialGoal): void
+        + cancel(goal: FinancialGoal): void
+    }
+    
+    class PausedGoalState {
+        + start(goal: FinancialGoal): void
+        + pause(goal: FinancialGoal): void
+        + complete(goal: FinancialGoal): void
+        + cancel(goal: FinancialGoal): void
+    }
+    
+    class CompletedGoalState {
+        + start(goal: FinancialGoal): void
+        + pause(goal: FinancialGoal): void
+        + complete(goal: FinancialGoal): void
+        + cancel(goal: FinancialGoal): void
+    }
+    
+    class CancelledGoalState {
+        + start(goal: FinancialGoal): void
+        + pause(goal: FinancialGoal): void
+        + complete(goal: FinancialGoal): void
+        + cancel(goal: FinancialGoal): void
+    }
     
     GoalState <|.. ActiveGoalState
     GoalState <|.. PausedGoalState
     GoalState <|.. CompletedGoalState
     GoalState <|.. CancelledGoalState
     
-    ' State Pattern - Payment States (NEW PATTERN)
+    ' State Pattern - Payment States
     interface PaymentState {
         + process(payment: Payment): void
         + complete(payment: Payment): void
@@ -414,17 +443,40 @@ package "Business/Domain Layer" as BusinessLayer {
         + refund(payment: Payment): void
     }
     
-    class PendingPaymentState
-    class ProcessingPaymentState
-    class CompletedPaymentState
-    class FailedPaymentState
+    class PendingPaymentState {
+        + process(payment: Payment): void
+        + complete(payment: Payment): void
+        + fail(payment: Payment): void
+        + refund(payment: Payment): void
+    }
+    
+    class ProcessingPaymentState {
+        + process(payment: Payment): void
+        + complete(payment: Payment): void
+        + fail(payment: Payment): void
+        + refund(payment: Payment): void
+    }
+    
+    class CompletedPaymentState {
+        + process(payment: Payment): void
+        + complete(payment: Payment): void
+        + fail(payment: Payment): void
+        + refund(payment: Payment): void
+    }
+    
+    class FailedPaymentState {
+        + process(payment: Payment): void
+        + complete(payment: Payment): void
+        + fail(payment: Payment): void
+        + refund(payment: Payment): void
+    }
     
     PaymentState <|.. PendingPaymentState
     PaymentState <|.. ProcessingPaymentState
     PaymentState <|.. CompletedPaymentState
     PaymentState <|.. FailedPaymentState
     
-    ' Template Method - Report Generation (NEW PATTERN)
+    ' Template Method - Report Generation
     abstract class ReportTemplate {
         + generate(): Report
         # {abstract} prepareHeader(): void
@@ -434,9 +486,29 @@ package "Business/Domain Layer" as BusinessLayer {
         # {abstract} exportPDF(): void
     }
     
-    class MonthlyReport
-    class IncomeStatementReport
-    class GroupSavingsReport
+    class MonthlyReport {
+        # prepareHeader(): void
+        # collectData(): void
+        # formatContent(): void
+        # generateSummary(): void
+        # exportPDF(): void
+    }
+    
+    class IncomeStatementReport {
+        # prepareHeader(): void
+        # collectData(): void
+        # formatContent(): void
+        # generateSummary(): void
+        # exportPDF(): void
+    }
+    
+    class GroupSavingsReport {
+        # prepareHeader(): void
+        # collectData(): void
+        # formatContent(): void
+        # generateSummary(): void
+        # exportPDF(): void
+    }
     
     ReportTemplate <|-- MonthlyReport
     ReportTemplate <|-- IncomeStatementReport
@@ -446,7 +518,7 @@ package "Business/Domain Layer" as BusinessLayer {
     ' DOMAIN ENTITIES (Refactored)
     ' ========================================================================
     
-    ' Refactored UserAccount (Extract Class - REFACTORING APPLIED)
+    ' Refactored UserAccount (Extract Class applied)
     class UserAccount {
         - userId: String
         - credentials: Credentials
@@ -463,7 +535,6 @@ package "Business/Domain Layer" as BusinessLayer {
         + updateCredentials(credentials: Credentials): void
     }
     
-    ' Extracted Classes (REFACTORING APPLIED)
     class Credentials {
         - username: String
         - passwordHash: String
@@ -510,7 +581,7 @@ package "Business/Domain Layer" as BusinessLayer {
     UserAccount --> SecuritySettings
     UserProfile --> Address
     
-    ' Money Value Object (Replace Primitive - REFACTORING APPLIED)
+    ' Money Value Object (Replace Primitive)
     class Money {
         - amount: BigDecimal
         - currency: Currency
@@ -670,18 +741,7 @@ package "Business/Domain Layer" as BusinessLayer {
         + getCurrentAmount(): Money
     }
     
-    class SavingsGroup {
-        - groupId: String
-        - groupName: String
-        - members: List<String>
-        - totalSavings: Money
-        
-        + addMember(memberId: String): void
-        + getMemberBalance(memberId: String): Money
-    }
-    
     GroupSavings --> Money
-    SavingsGroup --> Money
     
     ' Report Entity (with Builder and Template)
     class Report {
@@ -713,7 +773,7 @@ package "Business/Domain Layer" as BusinessLayer {
     Report --> ReportSection
     Report --> Chart
     
-    ' ReportFilter Parameter Object (Introduce Parameter Object - REFACTORING APPLIED)
+    ' ReportFilter Parameter Object (Introduce Parameter Object)
     class ReportFilter {
         - startDate: DateTime
         - endDate: DateTime
@@ -742,37 +802,6 @@ package "Business/Domain Layer" as BusinessLayer {
         + getMessage(): String
     }
     
-    ' GoalProgress Entity
-    class GoalProgress {
-        - goalId: String
-        - currentAmount: Money
-        - targetAmount: Money
-        - percentageComplete: double
-        - remainingAmount: Money
-        - estimatedCompletionDate: DateTime
-        
-        + getPercentageComplete(): double
-        + getRemainingAmount(): Money
-    }
-    
-    GoalProgress --> Money
-    
-    ' AIRecommendation Entity
-    class AIRecommendation {
-        - recommendationId: String
-        - userId: String
-        - goalId: String
-        - suggestedAmount: Money
-        - frequency: String
-        - reasoning: String
-        - confidence: double
-        
-        + getSuggestedAmount(): Money
-        + getReasoning(): String
-    }
-    
-    AIRecommendation --> Money
-    
     ' ========================================================================
     ' SERVICES (Business Logic)
     ' ========================================================================
@@ -787,16 +816,7 @@ package "Business/Domain Layer" as BusinessLayer {
         + deleteAccount(accountId: String): void
     }
     
-    class AuthenticationService {
-        - userRepository: UserRepository
-        - passwordManager: PasswordManager
-        
-        + authenticate(credentials: Credentials): boolean
-        + verifyIdentity(user: User): boolean
-        + enable2FA(user: User): void
-    }
-    
-    ' Split BudgetService (Divergent Change - REFACTORING APPLIED)
+    ' Refactored - Split BudgetService (Divergent Change)
     class BudgetCreationService {
         - budgetRepository: BudgetRepository
         
@@ -820,9 +840,8 @@ package "Business/Domain Layer" as BusinessLayer {
         
         + createGoal(goal: FinancialGoal): String
         + updateGoal(goal: FinancialGoal): void
-        + trackProgress(goalId: String): GoalProgress
+        + trackProgress(goalId: String): Progress
         + contributeToGoal(goalId: String, amount: Money): void
-        + getOptimizedPlan(userId: String, financialData: String): AIRecommendation
     }
     
     class GroupSavingsService {
@@ -833,7 +852,6 @@ package "Business/Domain Layer" as BusinessLayer {
         + joinGroup(groupId: String, userId: String): void
         + contribute(groupId: String, userId: String, amount: Money): void
         + leaveGroup(groupId: String, userId: String): void
-        + generateGroupReport(groupId: String): String
     }
     
     class PaymentsServiceBL {
@@ -846,7 +864,6 @@ package "Business/Domain Layer" as BusinessLayer {
         + scheduleRecurringPayment(payment: Payment, schedule: Schedule): String
         + cancelPayment(paymentId: String): void
         + refundPayment(paymentId: String): Response
-        + verifyPaymentMethod(userId: String, methodId: String): boolean
     }
     
     class ReportingService {
@@ -855,8 +872,6 @@ package "Business/Domain Layer" as BusinessLayer {
         - budgetRepository: BudgetRepository
         
         + generateReport(filter: ReportFilter, type: String): Report
-        + generateIncomeStatement(userId: String): String
-        + generateMonthlySummary(userId: String): String
         + exportToPDF(report: Report): byte[]
         + scheduleReport(filter: ReportFilter, schedule: Schedule): String
     }
@@ -866,14 +881,11 @@ package "Business/Domain Layer" as BusinessLayer {
         - notificationManager: NotificationManager
         
         + sendNotification(notification: Notification): void
-        + sendAlert(userId: String, message: String): boolean
         + getNotifications(userId: String): List<Notification>
-        + getNotificationHistory(userId: String): List<Notification>
         + markAsRead(notificationId: String): void
-        + setPreference(userId: String, preferenceType: String, enabled: boolean): boolean
     }
     
-    ' Extracted PasswordManager (Shotgun Surgery - REFACTORING APPLIED)
+    ' Extracted PasswordManager (Shotgun Surgery refactoring)
     class PasswordManager {
         - passwordHasher: PasswordHasher
         - passwordPolicy: PasswordPolicy
@@ -885,11 +897,9 @@ package "Business/Domain Layer" as BusinessLayer {
         + resetPassword(userId: String, token: String, newPassword: String): boolean
     }
     
-    ' Service Relationships
+    ' Service relationships
     AccountService --> AccountsRepository
     AccountService --> PasswordManager
-    AuthenticationService --> UserRepository
-    AuthenticationService --> PasswordManager
     BudgetCreationService --> BudgetRepository
     BudgetAnalyticsService --> BudgetRepository
     BudgetAnalyticsService --> TransactionRepository
@@ -908,22 +918,11 @@ package "Business/Domain Layer" as BusinessLayer {
     NotificationsServiceBL --> NotificationManager
 }
 
-' ================================
+' ============================================================================
 ' DATA ACCESS LAYER
-' ================================
+' ============================================================================
 
 package "Data Access Layer" as DataLayer {
-    
-    ' Data Access Interface
-    interface IDataAccessLayer {
-        + connect(): Connection
-        + disconnect(): void
-        + executeQuery(query: String): ResultSet
-        + executeUpdate(query: String): int
-        + beginTransaction(): void
-        + commitTransaction(): void
-        + rollbackTransaction(): void
-    }
     
     ' Repository Interfaces
     interface IRepository<T> {
@@ -1005,7 +1004,7 @@ package "Data Access Layer" as DataLayer {
         + delete(notificationId: String): void
     }
     
-    ' Database Connection Pool (Singleton - PATTERN)
+    ' Database Connection Pool (Optional Singleton)
     class DatabaseConnectionPool {
         - {static} instance: DatabaseConnectionPool
         - connections: Queue<Connection>
@@ -1016,48 +1015,11 @@ package "Data Access Layer" as DataLayer {
         + getConnection(): Connection
         + releaseConnection(conn: Connection): void
     }
-    
-    ' Concrete Repository Implementations
-    class AccountsRepositoryImpl
-    class UserRepositoryImpl
-    class TransactionRepositoryImpl
-    class BudgetRepositoryImpl
-    class GoalRepositoryImpl
-    class PaymentRepositoryImpl
-    class GroupSavingsRepositoryImpl
-    class NotificationRepositoryImpl
-    
-    IRepository <|.. AccountsRepository
-    IRepository <|.. UserRepository
-    IRepository <|.. TransactionRepository
-    IRepository <|.. BudgetRepository
-    IRepository <|.. GoalRepository
-    IRepository <|.. PaymentRepository
-    IRepository <|.. GroupSavingsRepository
-    IRepository <|.. NotificationRepository
-    
-    AccountsRepository <|.. AccountsRepositoryImpl
-    UserRepository <|.. UserRepositoryImpl
-    TransactionRepository <|.. TransactionRepositoryImpl
-    BudgetRepository <|.. BudgetRepositoryImpl
-    GoalRepository <|.. GoalRepositoryImpl
-    PaymentRepository <|.. PaymentRepositoryImpl
-    GroupSavingsRepository <|.. GroupSavingsRepositoryImpl
-    NotificationRepository <|.. NotificationRepositoryImpl
-    
-    AccountsRepositoryImpl ..> IDataAccessLayer
-    UserRepositoryImpl ..> IDataAccessLayer
-    TransactionRepositoryImpl ..> IDataAccessLayer
-    BudgetRepositoryImpl ..> IDataAccessLayer
-    GoalRepositoryImpl ..> IDataAccessLayer
-    PaymentRepositoryImpl ..> IDataAccessLayer
-    GroupSavingsRepositoryImpl ..> IDataAccessLayer
-    NotificationRepositoryImpl ..> IDataAccessLayer
 }
 
-' ================================
+' ============================================================================
 ' CROSS-CUTTING CONCERNS
-' ================================
+' ============================================================================
 
 package "Cross-Cutting Concerns" as CrossCutting {
     
@@ -1124,12 +1086,11 @@ package "Cross-Cutting Concerns" as CrossCutting {
     
     PasswordManager --> PasswordHasher
     PasswordManager --> PasswordPolicy
-    AuthProxy --> SessionManager
 }
 
-' ================================
-' EXTERNAL SYSTEMS
-' ================================
+' ============================================================================
+' EXTERNAL SYSTEMS (as per Arch.drawio)
+' ============================================================================
 
 package "External Systems" as ExternalSystems {
     
@@ -1164,19 +1125,25 @@ VodafoneCashAdapter --> VodafoneAPI
 NotificationManager --> EmailService
 NotificationManager --> SMSService
 
-' ================================
-' LAYER CONNECTIONS
-' ================================
+' ============================================================================
+' KEY RELATIONSHIPS BETWEEN LAYERS
+' ============================================================================
 
 ' Controllers use Services
-Controller --> AccountService
-Controller --> AuthenticationService
-Controller --> BudgetCreationService
-Controller --> BudgetAnalyticsService
-Controller --> GoalService
-Controller --> GroupSavingsService
-Controller --> PaymentsServiceBL
-Controller --> ReportingService
-Controller --> NotificationsServiceBL
+IControllerAuth --> AuthProxy
+IControllerAuth --> ValidationHandler
+IControllerAccounts --> AccountService
+IControllerBudget --> BudgetCreationService
+IControllerBudget --> BudgetAnalyticsService
+IControllerGoals --> GoalService
+IControllerPayments --> PaymentsServiceBL
+IControllerPayments --> PaymentCreator
+IControllerReports --> ReportingService
+IControllerReports --> ReportBuilder
+IControllerNotifications --> NotificationManager
+IControllerGroupSavings --> GroupSavingsService
+
+' Services use Repositories (Data Access)
+' (Already shown above in Service relationships section)
 
 @enduml
