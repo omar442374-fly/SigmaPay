@@ -26,10 +26,34 @@ const Header: React.FC<HeaderProps> = ({ currentPage, onNavigate, userId }) => {
               Goals
             </button>
             <button
+              style={currentPage === 'groups' ? styles.navButtonActive : styles.navButton}
+              onClick={() => onNavigate('groups')}
+            >
+              Groups
+            </button>
+            <button
+              style={currentPage === 'payments' ? styles.navButtonActive : styles.navButton}
+              onClick={() => onNavigate('payments')}
+            >
+              Payments
+            </button>
+            <button
               style={currentPage === 'reports' ? styles.navButtonActive : styles.navButton}
               onClick={() => onNavigate('reports')}
             >
               Reports
+            </button>
+            <button
+              style={currentPage === 'notifications' ? styles.navButtonActive : styles.navButton}
+              onClick={() => onNavigate('notifications')}
+            >
+              Notifications
+            </button>
+            <button
+              style={currentPage === 'profile' ? styles.navButtonActive : styles.navButton}
+              onClick={() => onNavigate('profile')}
+            >
+              Profile
             </button>
           </nav>
         )}

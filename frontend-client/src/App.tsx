@@ -4,8 +4,12 @@ import AuthPage from './pages/AuthPage';
 import BudgetPage from './pages/BudgetPage';
 import GoalsPage from './pages/GoalsPage';
 import ReportsPage from './pages/ReportsPage';
+import ProfilePage from './pages/ProfilePage';
+import PaymentsPage from './pages/PaymentsPage';
+import GroupSavingsPage from './pages/GroupSavingsPage';
+import NotificationsPage from './pages/NotificationsPage';
 
-type Page = 'auth' | 'budgets' | 'goals' | 'reports';
+type Page = 'auth' | 'budgets' | 'goals' | 'reports' | 'profile' | 'payments' | 'groups' | 'notifications';
 
 const App: React.FC = () => {
   const [currentPage, setCurrentPage] = useState<Page>('auth');
@@ -29,6 +33,10 @@ const App: React.FC = () => {
         {currentPage === 'budgets' && userId && <BudgetPage userId={userId} />}
         {currentPage === 'goals' && userId && <GoalsPage userId={userId} />}
         {currentPage === 'reports' && userId && <ReportsPage userId={userId} />}
+        {currentPage === 'profile' && userId && <ProfilePage userId={userId} />}
+        {currentPage === 'payments' && userId && <PaymentsPage userId={userId} />}
+        {currentPage === 'groups' && userId && <GroupSavingsPage userId={userId} />}
+        {currentPage === 'notifications' && userId && <NotificationsPage userId={userId} />}
       </main>
 
       <footer style={styles.footer}>

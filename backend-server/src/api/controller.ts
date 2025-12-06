@@ -70,6 +70,94 @@ export class Controller {
     return this.accountService.getUserAccount(userId);
   }
 
+  ctlUpdateUserInfo(userId: string, newEmail: string, newPhoneNumber: string, newAddress: string): boolean {
+    try {
+      const user = this.accountService.getUserAccount(userId);
+      if (user) {
+        user.profile.email = newEmail;
+        user.profile.phone = newPhoneNumber;
+        user.profile.address = newAddress;
+        // In production, save via user service
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error updating user info:', error);
+      return false;
+    }
+  }
+
+  ctlDeleteAccount(userId: string): boolean {
+    try {
+      this.accountService.deleteAccount(userId);
+      return true;
+    } catch (error) {
+      console.error('Error deleting account:', error);
+      return false;
+    }
+  }
+
+  ctlChangeUsername(userId: string, newUsername: string): boolean {
+    try {
+      const user = this.accountService.getUserAccount(userId);
+      if (user) {
+        user.credentials.username = newUsername;
+        // In production, save via user service
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error changing username:', error);
+      return false;
+    }
+  }
+
+  ctlResetPassword(userId: string, oldPassword: string, newPassword: string): boolean {
+    try {
+      const user = this.accountService.getUserAccount(userId);
+      if (user && user.credentials.passwordHash === oldPassword) {
+        user.credentials.passwordHash = newPassword; // NOTE: In production, hash with bcrypt/argon2!
+        // In production, save via user service
+        return true;
+      }
+      return false;
+    } catch (error) {
+      console.error('Error resetting password:', error);
+      return false;
+    }
+  }
+
+  ctlVerifyIdentity(userId: string, verificationCode: string, method: string): boolean {
+    // Mock implementation - in production, verify against stored code
+    return verificationCode.length >= 6;
+  }
+
+  ctlEnableAccount(userId: string): boolean {
+    try {
+      const user = this.accountService.getUserAccount(userId);
+      if (user) {
+        user.securitySettings.accountStatus = 'Active';
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  ctlDisableAccount(userId: string): boolean {
+    try {
+      const user = this.accountService.getUserAccount(userId);
+      if (user) {
+        user.securitySettings.accountStatus = 'Disabled';
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  }
+
   // IControllerBudget methods
   ctlCreateBudget(
     userId: string,
@@ -275,6 +363,52 @@ export function createApiRouter(controller: Controller): Router {
     }
   });
 
+  router.put('/accounts/:userId', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { email, phoneNumber, address } = req.body;
+    const result = controller.ctlUpdateUserInfo(userId, email, phoneNumber, address);
+    res.json({ success: result, message: result ? 'Account updated successfully' : 'Failed to update account' });
+  });
+
+  router.delete('/accounts/:userId', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const result = controller.ctlDeleteAccount(userId);
+    res.json({ success: result, message: result ? 'Account deleted successfully' : 'Failed to delete account' });
+  });
+
+  router.put('/accounts/:userId/username', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { newUsername } = req.body;
+    const result = controller.ctlChangeUsername(userId, newUsername);
+    res.json({ success: result, message: result ? 'Username changed successfully' : 'Failed to change username' });
+  });
+
+  router.put('/accounts/:userId/password', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { oldPassword, newPassword } = req.body;
+    const result = controller.ctlResetPassword(userId, oldPassword, newPassword);
+    res.json({ success: result, message: result ? 'Password reset successfully' : 'Failed to reset password' });
+  });
+
+  router.post('/accounts/:userId/verify', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const { verificationCode, method } = req.body;
+    const result = controller.ctlVerifyIdentity(userId, verificationCode, method);
+    res.json({ success: result, message: result ? 'Identity verified successfully' : 'Failed to verify identity' });
+  });
+
+  router.put('/accounts/:userId/enable', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const result = controller.ctlEnableAccount(userId);
+    res.json({ success: result, message: result ? 'Account enabled successfully' : 'Failed to enable account' });
+  });
+
+  router.put('/accounts/:userId/disable', (req: Request, res: Response) => {
+    const { userId } = req.params;
+    const result = controller.ctlDisableAccount(userId);
+    res.json({ success: result, message: result ? 'Account disabled successfully' : 'Failed to disable account' });
+  });
+
   // Budget endpoints
   router.post('/budgets/create', (req: Request, res: Response) => {
     const { userId, totalAmount, startDate, endDate, categories } = req.body;
@@ -342,6 +476,26 @@ export function createApiRouter(controller: Controller): Router {
     res.json({ success: result });
   });
 
+  router.post('/payments/verify', (req: Request, res: Response) => {
+    const { userId, methodId, CVV } = req.body;
+    const result = controller.ctlVerifyPaymentMethod(userId, methodId, CVV);
+    res.json({ success: result, message: result ? 'Payment method verified' : 'Verification failed' });
+  });
+
+  // Group Savings endpoints
+  router.post('/groups/:groupId/member', (req: Request, res: Response) => {
+    const { groupId } = req.params;
+    const { memberId } = req.body;
+    const result = controller.ctlAddMember(groupId, memberId);
+    res.json({ success: result, message: result ? 'Member added successfully' : 'Failed to add member' });
+  });
+
+  router.get('/groups/:groupId/report', (req: Request, res: Response) => {
+    const { groupId } = req.params;
+    const report = controller.ctlGenerateGroupReport(groupId);
+    res.json({ success: true, report });
+  });
+
   // Notifications endpoints
   router.post('/notifications/alert', (req: Request, res: Response) => {
     const { userId, message } = req.body;
@@ -353,6 +507,12 @@ export function createApiRouter(controller: Controller): Router {
     const { userId } = req.params;
     const notifications = controller.ctlGetNotificationHistory(userId);
     res.json({ success: true, notifications });
+  });
+
+  router.post('/notifications/preferences', (req: Request, res: Response) => {
+    const { userId, preferenceType, isEnabled } = req.body;
+    const result = controller.ctlSetNotificationPreference(userId, preferenceType, isEnabled);
+    res.json({ success: result, message: result ? 'Preference updated successfully' : 'Failed to update preference' });
   });
 
   return router;

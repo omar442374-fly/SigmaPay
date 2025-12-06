@@ -50,6 +50,26 @@ class ApiClient {
     return this.request(`/accounts/${userId}`, 'GET');
   }
 
+  async updateAccount(userId: string, email: string, phoneNumber: string, address: string) {
+    return this.request(`/accounts/${userId}`, 'PUT', { email, phoneNumber, address });
+  }
+
+  async deleteAccount(userId: string) {
+    return this.request(`/accounts/${userId}`, 'DELETE');
+  }
+
+  async changeUsername(userId: string, newUsername: string) {
+    return this.request(`/accounts/${userId}/username`, 'PUT', { newUsername });
+  }
+
+  async changePassword(userId: string, oldPassword: string, newPassword: string) {
+    return this.request(`/accounts/${userId}/password`, 'PUT', { oldPassword, newPassword });
+  }
+
+  async verifyIdentity(userId: string, verificationCode: string, method: string) {
+    return this.request(`/accounts/${userId}/verify`, 'POST', { verificationCode, method });
+  }
+
   // Budget API
   async createBudget(userId: string, totalAmount: number, startDate: string, endDate: string, categories: string[]) {
     return this.request('/budgets/create', 'POST', { userId, totalAmount, startDate, endDate, categories });
@@ -82,9 +102,42 @@ class ApiClient {
     return this.request('/payments/process', 'POST', { userId, methodId, amount, merchantId });
   }
 
+  async requestRefund(userId: string, transactionId: string, amount: number, reason: string) {
+    return this.request('/payments/refund', 'POST', { userId, transactionId, amount, reason });
+  }
+
+  async verifyPaymentMethod(userId: string, methodId: string, CVV: string) {
+    return this.request('/payments/verify', 'POST', { userId, methodId, CVV });
+  }
+
+  // Group Savings API
+  async createGroup(groupName: string, members: string[]) {
+    return this.request('/groups/create', 'POST', { groupName, members });
+  }
+
+  async addMemberToGroup(groupId: string, memberId: string) {
+    return this.request(`/groups/${groupId}/member`, 'POST', { memberId });
+  }
+
+  async processGroupDeposit(groupId: string, memberId: string, amount: number) {
+    return this.request(`/groups/${groupId}/deposit`, 'POST', { memberId, amount });
+  }
+
+  async getGroupReport(groupId: string) {
+    return this.request(`/groups/${groupId}/report`, 'GET');
+  }
+
   // Notifications API
   async getNotifications(userId: string) {
     return this.request(`/notifications/${userId}`, 'GET');
+  }
+
+  async sendAlert(userId: string, message: string) {
+    return this.request('/notifications/alert', 'POST', { userId, message });
+  }
+
+  async setNotificationPreference(userId: string, preferenceType: string, isEnabled: boolean) {
+    return this.request('/notifications/preferences', 'POST', { userId, preferenceType, isEnabled });
   }
 }
 
