@@ -61,9 +61,6 @@ skinparam class {
 package "Core System" <<Rectangle>> {
     
     class SigmaPay {
-        - facade: SigmaPayFacade
-        - controller: Controller
-        
         + processRequest(request): Response
     }
     
@@ -985,8 +982,16 @@ package "External Systems" <<Rectangle>> {
 ' ==============================================
 
 ' Core System
-SigmaPay --> SigmaPayFacade
-SigmaPay --> Controller
+SigmaPay o-- Controller
+SigmaPay o-- SigmaPayFacade
+
+SigmaPay *-- IAccountService
+SigmaPay *-- IBudgetService
+SigmaPay *-- IGoalService
+SigmaPay *-- IGroupSavingsService
+SigmaPay *-- IReportingService
+SigmaPay *-- IPaymentsServiceBL
+SigmaPay o-- INotificationsServiceBL
 
 ' Facade dependencies (Service Interfaces only)
 SigmaPayFacade --> IAccountService
