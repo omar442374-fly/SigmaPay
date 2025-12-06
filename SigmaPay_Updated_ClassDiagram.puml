@@ -692,9 +692,10 @@ package "Business/Domain Layer" as BusinessLayer {
     class CardPayment {
         - cardNumber: String
         - cvv: String
-        - expiryDate: String
+        - expiryDate: DateTime
         
         + process(): Response
+        + isExpired(): boolean
     }
     
     class WalletPayment {
