@@ -8,7 +8,8 @@ interface GroupSavingsPageProps {
 const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState('');
-  const [groupId, setGroupId] = useState('');
+  const [addMemberGroupId, setAddMemberGroupId] = useState('');
+  const [depositGroupId, setDepositGroupId] = useState('');
   const [memberId, setMemberId] = useState('');
   const [depositAmount, setDepositAmount] = useState('');
   const [reportGroupId, setReportGroupId] = useState('');
@@ -21,7 +22,8 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
     const response = await apiClient.createGroup(groupName, membersList);
     if (response.success && response.group) {
       setMessage(`Group created successfully! Group ID: ${response.group.groupId}`);
-      setGroupId(response.group.groupId);
+      setAddMemberGroupId(response.group.groupId);
+      setDepositGroupId(response.group.groupId);
       setReportGroupId(response.group.groupId);
       setGroupName('');
       setMembers('');
@@ -32,7 +34,7 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
 
   const handleAddMember = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await apiClient.addMemberToGroup(groupId, memberId);
+    const response = await apiClient.addMemberToGroup(addMemberGroupId, memberId);
     setMessage(response.success ? 'Member added successfully!' : 'Failed to add member');
     if (response.success) {
       setMemberId('');
@@ -41,7 +43,7 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
 
   const handleProcessDeposit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await apiClient.processGroupDeposit(groupId, userId, parseFloat(depositAmount));
+    const response = await apiClient.processGroupDeposit(depositGroupId, userId, parseFloat(depositAmount));
     setMessage(response.success ? 'Deposit processed successfully!' : 'Failed to process deposit');
     if (response.success) {
       setDepositAmount('');
@@ -98,8 +100,8 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
             <label style={styles.label}>Group ID:</label>
             <input
               type="text"
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
+              value={addMemberGroupId}
+              onChange={(e) => setAddMemberGroupId(e.target.value)}
               required
               style={styles.input}
             />
@@ -127,8 +129,8 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
             <label style={styles.label}>Group ID:</label>
             <input
               type="text"
-              value={groupId}
-              onChange={(e) => setGroupId(e.target.value)}
+              value={depositGroupId}
+              onChange={(e) => setDepositGroupId(e.target.value)}
               required
               style={styles.input}
             />

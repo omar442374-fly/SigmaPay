@@ -9,6 +9,7 @@ const PaymentsPage: React.FC<PaymentsPageProps> = ({ userId }) => {
   const [methodId, setMethodId] = useState('card');
   const [amount, setAmount] = useState('');
   const [merchantId, setMerchantId] = useState('');
+  const [verifyMethodId, setVerifyMethodId] = useState('');
   const [CVV, setCVV] = useState('');
   const [transactionId, setTransactionId] = useState('');
   const [refundAmount, setRefundAmount] = useState('');
@@ -27,7 +28,7 @@ const PaymentsPage: React.FC<PaymentsPageProps> = ({ userId }) => {
 
   const handleVerifyPaymentMethod = async (e: React.FormEvent) => {
     e.preventDefault();
-    const response = await apiClient.verifyPaymentMethod(userId, methodId, CVV);
+    const response = await apiClient.verifyPaymentMethod(userId, verifyMethodId, CVV);
     setMessage(response.success ? 'Payment method verified!' : 'Failed to verify payment method');
     if (response.success) {
       setCVV('');
@@ -98,8 +99,8 @@ const PaymentsPage: React.FC<PaymentsPageProps> = ({ userId }) => {
             <label style={styles.label}>Payment Method ID:</label>
             <input
               type="text"
-              value={methodId}
-              onChange={(e) => setMethodId(e.target.value)}
+              value={verifyMethodId}
+              onChange={(e) => setVerifyMethodId(e.target.value)}
               required
               style={styles.input}
             />
@@ -112,7 +113,7 @@ const PaymentsPage: React.FC<PaymentsPageProps> = ({ userId }) => {
               onChange={(e) => setCVV(e.target.value)}
               required
               style={styles.input}
-              maxLength={3}
+              maxLength={4}
             />
           </div>
           <button type="submit" style={styles.button}>
