@@ -28,8 +28,9 @@ const NotificationsPage: React.FC = () => {
 
   const loadNotifications = async () => {
     const response = await apiClient.getNotifications(userId);
-    if (response.success && response.notifications) {
-      setNotifications(response.notifications);
+    if (response.success) {
+      const notifs = (response as any).notifications || [];
+      setNotifications(notifs);
     }
   };
 

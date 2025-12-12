@@ -26,9 +26,10 @@ const GoalsPage: React.FC = () => {
       priorityLevel
     );
 
-    if (response.success && response.goal) {
-      setMessage(`Goal created successfully! Goal ID: ${response.goal.goalId}`);
-      setProgressGoalId(response.goal.goalId);
+    if (response.success) {
+      const goalId = (response as any).goalId || (response as any).goal?.id;
+      setMessage(`Goal created successfully! Goal ID: ${goalId}`);
+      if (goalId) setProgressGoalId(goalId);
     } else {
       setMessage('Failed to create goal');
     }
@@ -41,8 +42,9 @@ const GoalsPage: React.FC = () => {
     }
 
     const response = await apiClient.trackProgress(userId, progressGoalId);
-    if (response.success && response.progress) {
-      setProgressData(response.progress);
+    if (response.success) {
+      const progress = (response as any).progress;
+      if (progress) setProgressData(progress);
     } else {
       setMessage('Failed to track progress');
     }

@@ -29,7 +29,8 @@ const BudgetPage: React.FC = () => {
     );
 
     if (response.success) {
-      setMessage(`Budget created successfully! Budget ID: ${response.budget?.budgetId}`);
+      const budgetId = (response as any).budgetId || (response as any).budget?.id;
+      setMessage(`Budget created successfully! Budget ID: ${budgetId}`);
     } else {
       setMessage('Failed to create budget');
     }
