@@ -8,7 +8,10 @@ Your Supabase database is now connected to the SigmaPay application!
 
 - **Project URL**: `https://pptfhnzffcqlrjimvmot.supabase.co`
 - **Database Name**: `omar442374-sigmaPay`
+- **Anon Key**: Configured (from your publishable key)
 - **Environment**: Production-ready
+
+> **Note**: The key format provided (`sb_publishable_...`) is unusual for Supabase. Typically, Supabase anon keys are JWT tokens starting with `eyJ`. If you experience connection issues, please verify the key in your Supabase dashboard under **Settings → API → Project API keys → anon/public**.
 
 ### Files Updated
 
@@ -109,10 +112,11 @@ user_profiles
 ## 🆘 Troubleshooting
 
 ### If signup doesn't work:
-1. Check that SQL script was run successfully
-2. Verify Email provider is enabled
-3. Check browser console for errors
-4. Ensure Supabase project is not paused
+1. **Verify the anon key**: The key format should typically be a JWT token starting with `eyJ`. If you're getting authentication errors, double-check the key in Supabase dashboard under **Settings → API → anon/public key**
+2. Check that SQL script was run successfully
+3. Verify Email provider is enabled
+4. Check browser console for errors
+5. Ensure Supabase project is not paused
 
 ### If login fails:
 1. Verify user was created in Authentication → Users
