@@ -206,6 +206,27 @@ CREATE TABLE IF NOT EXISTS public.savings_groups (
 
 CREATE INDEX IF NOT EXISTS idx_savings_groups_created_by ON public.savings_groups(created_by);
 
+-- ============================================
+-- GROUP MEMBERS TABLE
+-- ============================================
+
+CREATE TABLE IF NOT EXISTS public.group_members (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    group_id UUID NOT NULL REFERENCES public.savings_groups(id) ON DELETE CASCADE,
+    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    contribution_amount DECIMAL(12, 2) DEFAULT 0,
+    joined_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
+    UNIQUE(group_id, user_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON public.group_members(group_id);
+CREATE INDEX IF NOT EXISTS idx_group_members_user_id ON public.group_members(user_id);
+
+-- ============================================
+-- RLS POLICIES FOR GROUPS AND MEMBERS
+-- (Created after both tables exist to avoid circular dependency)
+-- ============================================
+
 ALTER TABLE public.savings_groups ENABLE ROW LEVEL SECURITY;
 
 -- Group members can view group
@@ -226,22 +247,6 @@ CREATE POLICY "Users can create groups"
 CREATE POLICY "Group creator can update group"
     ON public.savings_groups FOR UPDATE
     USING (auth.uid() = created_by);
-
--- ============================================
--- GROUP MEMBERS TABLE
--- ============================================
-
-CREATE TABLE IF NOT EXISTS public.group_members (
-    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    group_id UUID NOT NULL REFERENCES public.savings_groups(id) ON DELETE CASCADE,
-    user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    contribution_amount DECIMAL(12, 2) DEFAULT 0,
-    joined_at TIMESTAMP WITH TIME ZONE DEFAULT TIMEZONE('utc', NOW()),
-    UNIQUE(group_id, user_id)
-);
-
-CREATE INDEX IF NOT EXISTS idx_group_members_group_id ON public.group_members(group_id);
-CREATE INDEX IF NOT EXISTS idx_group_members_user_id ON public.group_members(user_id);
 
 ALTER TABLE public.group_members ENABLE ROW LEVEL SECURITY;
 
