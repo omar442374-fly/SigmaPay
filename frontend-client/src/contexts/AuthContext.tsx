@@ -13,7 +13,7 @@ interface AuthContextType {
   error: string | null;
   loginUser: (email: string, password: string) => Promise<void>;
   registerUser: (userData: { username: string; email: string; password: string; phoneNumber: string }) => Promise<void>;
-  logoutUser: () => void;
+  logoutUser: () => Promise<void>;
   isAuthenticated: () => boolean;
 }
 
@@ -201,12 +201,21 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   };
 
   const logoutUser = async () => {
-    if (useSupabase) {
-      await supabase.auth.signOut();
-    } else {
-      localStorage.removeItem('user');
+    try {
+      if (useSupabase) {
+        const { error } = await supabase.auth.signOut();
+        if (error) {
+          console.error('Logout error:', error);
+          // Still clear local state even if signout fails
+        }
+      } else {
+        localStorage.removeItem('user');
+      }
+    } catch (err) {
+      console.error('Error during logout:', err);
+    } finally {
+      setUser(null);
     }
-    setUser(null);
   };
 
   const isAuthenticated = () => {

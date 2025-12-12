@@ -53,19 +53,31 @@ CREATE TRIGGER set_updated_at
     FOR EACH ROW
     EXECUTE FUNCTION public.handle_updated_at();
 
--- Optional: Create a function to automatically create a profile when a user signs up
+-- Optional: Function to handle new user creation
+-- Note: This is a placeholder for future implementation
+-- To enable automatic profile creation, implement the logic below
+-- and create a trigger on auth.users table
+/*
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-    -- This will be called by a trigger on auth.users
-    -- You can customize this based on your needs
+    INSERT INTO public.user_profiles (id, username, email)
+    VALUES (NEW.id, COALESCE(NEW.raw_user_meta_data->>'username', split_part(NEW.email, '@', 1)), NEW.email);
     RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
--- Grant permissions
-GRANT USAGE ON SCHEMA public TO anon, authenticated;
-GRANT ALL ON public.user_profiles TO anon, authenticated;
+-- Uncomment to enable automatic profile creation:
+-- CREATE TRIGGER on_auth_user_created
+--     AFTER INSERT ON auth.users
+--     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+*/
+
+-- Grant appropriate permissions
+-- Note: Authenticated users can manage their own profiles via RLS policies
+-- Anonymous users should not have direct access to user_profiles
+GRANT USAGE ON SCHEMA public TO authenticated;
+GRANT SELECT, INSERT, UPDATE ON public.user_profiles TO authenticated;
 
 -- Verify setup
 SELECT 
