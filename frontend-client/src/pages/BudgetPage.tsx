@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface BudgetPageProps {
-  userId: string;
-}
+const BudgetPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const BudgetPage: React.FC<BudgetPageProps> = ({ userId }) => {
   const [totalAmount, setTotalAmount] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');

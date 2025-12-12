@@ -1,0 +1,21 @@
+# Reference UI folder (extracted from zip)
+Sigmapay-master/
+
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+build/
+
+# Environment files
+.env
+.env.local
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*

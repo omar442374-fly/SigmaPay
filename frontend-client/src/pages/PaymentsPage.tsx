@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface PaymentsPageProps {
-  userId: string;
-}
+const PaymentsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const PaymentsPage: React.FC<PaymentsPageProps> = ({ userId }) => {
   const [methodId, setMethodId] = useState('card');
   const [amount, setAmount] = useState('');
   const [merchantId, setMerchantId] = useState('');

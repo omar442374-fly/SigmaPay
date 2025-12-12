@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface GroupSavingsPageProps {
-  userId: string;
-}
+const GroupSavingsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState('');
   const [addMemberGroupId, setAddMemberGroupId] = useState('');

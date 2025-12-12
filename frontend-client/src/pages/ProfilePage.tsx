@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface ProfilePageProps {
-  userId: string;
-}
+const ProfilePage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const ProfilePage: React.FC<ProfilePageProps> = ({ userId }) => {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [address, setAddress] = useState('');

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface GoalsPageProps {
-  userId: string;
-}
+const GoalsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const GoalsPage: React.FC<GoalsPageProps> = ({ userId }) => {
   const [goalType, setGoalType] = useState('Savings');
   const [targetAmount, setTargetAmount] = useState('');
   const [deadline, setDeadline] = useState('');

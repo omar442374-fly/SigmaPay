@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface ReportsPageProps {
-  userId: string;
-}
+const ReportsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ userId }) => {
   const [monthlySummary, setMonthlySummary] = useState('');
   const [incomeStatement, setIncomeStatement] = useState('');
   const [loading, setLoading] = useState(false);
