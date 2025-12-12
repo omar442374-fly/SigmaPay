@@ -1,0 +1,578 @@
+{
+  "info": {
+    "name": "SigmaPay API Collection",
+    "description": "Complete API collection for testing SigmaPay Supabase integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "supabase_url",
+      "value": "https://pptfhnzffcqlrjimvmot.supabase.co",
+      "type": "string"
+    },
+    {
+      "key": "supabase_anon_key",
+      "value": "sb_publishable_-KuMy3MKK7P4i3DfHVevhg_eifll1wi",
+      "type": "string"
+    },
+    {
+      "key": "access_token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "user_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "budget_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "goal_id",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "group_id",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!\",\n  \"options\": {\n    \"data\": {\n      \"username\": \"testuser\",\n      \"phone_number\": \"+1234567890\"\n    }\n  }\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/auth/v1/signup",
+              "host": ["{{supabase_url}}"],
+              "path": ["auth", "v1", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response.access_token) {",
+                  "  pm.collectionVariables.set('access_token', response.access_token);",
+                  "  pm.collectionVariables.set('user_id', response.user.id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!\"\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/auth/v1/token?grant_type=password",
+              "host": ["{{supabase_url}}"],
+              "path": ["auth", "v1", "token"],
+              "query": [
+                {
+                  "key": "grant_type",
+                  "value": "password"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{supabase_url}}/auth/v1/logout",
+              "host": ["{{supabase_url}}"],
+              "path": ["auth", "v1", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Budgets",
+      "item": [
+        {
+          "name": "Create Budget",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response && response[0] && response[0].id) {",
+                  "  pm.collectionVariables.set('budget_id', response[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"total_amount\": 1000.00,\n  \"start_date\": \"2024-01-01\",\n  \"end_date\": \"2024-01-31\",\n  \"categories\": [\"Food\", \"Transport\", \"Entertainment\"],\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/budgets",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "budgets"]
+            }
+          }
+        },
+        {
+          "name": "Get All Budgets",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/budgets?user_id=eq.{{user_id}}&select=*",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "budgets"],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "eq.{{user_id}}"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Record Expense",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"budget_id\": \"{{budget_id}}\",\n  \"amount\": 45.50,\n  \"category\": \"Food\",\n  \"description\": \"Grocery shopping\",\n  \"date\": \"2024-01-15\",\n  \"payment_method\": \"card\"\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/expenses",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "expenses"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Goals",
+      "item": [
+        {
+          "name": "Create Goal",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response && response[0] && response[0].id) {",
+                  "  pm.collectionVariables.set('goal_id', response[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"goal_type\": \"savings\",\n  \"title\": \"Emergency Fund\",\n  \"target_amount\": 10000.00,\n  \"current_amount\": 0.00,\n  \"deadline\": \"2024-12-31\",\n  \"priority_level\": \"high\",\n  \"status\": \"active\"\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/goals",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "goals"]
+            }
+          }
+        },
+        {
+          "name": "Get All Goals",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/goals?user_id=eq.{{user_id}}&select=*",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "goals"],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "eq.{{user_id}}"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Goal Progress",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"current_amount\": 2500.00\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/goals?id=eq.{{goal_id}}",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "goals"],
+              "query": [
+                {
+                  "key": "id",
+                  "value": "eq.{{goal_id}}"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Transactions",
+      "item": [
+        {
+          "name": "Process Payment",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"transaction_type\": \"payment\",\n  \"amount\": 150.00,\n  \"recipient\": \"Amazon\",\n  \"payment_method\": \"card\",\n  \"status\": \"completed\",\n  \"description\": \"Online purchase\"\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/transactions",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "transactions"]
+            }
+          }
+        },
+        {
+          "name": "Get Transaction History",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/transactions?user_id=eq.{{user_id}}&select=*&order=created_at.desc",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "transactions"],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "eq.{{user_id}}"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                },
+                {
+                  "key": "order",
+                  "value": "created_at.desc"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "item": [
+        {
+          "name": "Create Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "const response = pm.response.json();",
+                  "if (response && response[0] && response[0].id) {",
+                  "  pm.collectionVariables.set('group_id', response[0].id);",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Vacation Fund 2024\",\n  \"description\": \"Saving for summer vacation\",\n  \"target_amount\": 5000.00,\n  \"created_by\": \"{{user_id}}\"\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/savings_groups",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "savings_groups"]
+            }
+          }
+        },
+        {
+          "name": "Get User Groups",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/savings_groups?created_by=eq.{{user_id}}&select=*",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "savings_groups"],
+              "query": [
+                {
+                  "key": "created_by",
+                  "value": "eq.{{user_id}}"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Notifications",
+      "item": [
+        {
+          "name": "Create Notification",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"user_id\": \"{{user_id}}\",\n  \"title\": \"Budget Alert\",\n  \"message\": \"You've reached 80% of your monthly budget\",\n  \"type\": \"warning\",\n  \"read\": false\n}"
+            },
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/notifications",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "notifications"]
+            }
+          }
+        },
+        {
+          "name": "Get User Notifications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "apikey",
+                "value": "{{supabase_anon_key}}"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{access_token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{supabase_url}}/rest/v1/notifications?user_id=eq.{{user_id}}&select=*&order=created_at.desc",
+              "host": ["{{supabase_url}}"],
+              "path": ["rest", "v1", "notifications"],
+              "query": [
+                {
+                  "key": "user_id",
+                  "value": "eq.{{user_id}}"
+                },
+                {
+                  "key": "select",
+                  "value": "*"
+                },
+                {
+                  "key": "order",
+                  "value": "created_at.desc"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1215 @@
+================================================================================
+SIGMAPAY API TESTING GUIDE
+Complete API Endpoints, Request Bodies, and Environment Variables
+================================================================================
+
+================================================================================
+ENVIRONMENT VARIABLES
+================================================================================
+
+# Supabase Configuration
+REACT_APP_SUPABASE_URL=https://pptfhnzffcqlrjimvmot.supabase.co
+REACT_APP_SUPABASE_ANON_KEY=sb_publishable_-KuMy3MKK7P4i3DfHVevhg_eifll1wi
+
+# Secret Keys (DO NOT USE IN FRONTEND - Backend only)
+SUPABASE_SECRET_KEY=sb_secret_QCapD94nc8qOtpJAgmZpnw_4WHD7fUC
+
+# Database Configuration
+DATABASE_NAME=omar442374-sigmaPay
+DATABASE_PASSWORD=AZBY1234
+
+# Base API URL (if using REST API fallback)
+API_BASE_URL=http://localhost:3000/api
+
+================================================================================
+AUTHENTICATION ENDPOINTS
+================================================================================
+
+1. USER SIGNUP
+--------------
+Method: POST
+Endpoint: /auth/signup (Supabase Auth API)
+Direct Supabase: supabase.auth.signUp()
+
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!",
+  "options": {
+    "data": {
+      "username": "johndoe",
+      "phone_number": "+1234567890"
+    }
+  }
+}
+
+Response:
+{
+  "user": {
+    "id": "uuid-here",
+    "email": "user@example.com",
+    "user_metadata": {
+      "username": "johndoe",
+      "phone_number": "+1234567890"
+    }
+  },
+  "session": {
+    "access_token": "jwt-token-here",
+    "refresh_token": "refresh-token-here"
+  }
+}
+
+--------------------------------------------------------------------------------
+
+2. USER LOGIN
+-------------
+Method: POST
+Endpoint: /auth/login (Supabase Auth API)
+Direct Supabase: supabase.auth.signInWithPassword()
+
+Request Body:
+{
+  "email": "user@example.com",
+  "password": "SecurePassword123!"
+}
+
+Response:
+{
+  "user": {
+    "id": "uuid-here",
+    "email": "user@example.com"
+  },
+  "session": {
+    "access_token": "jwt-token-here",
+    "refresh_token": "refresh-token-here"
+  }
+}
+
+--------------------------------------------------------------------------------
+
+3. USER LOGOUT
+--------------
+Method: POST
+Endpoint: /auth/logout (Supabase Auth API)
+Direct Supabase: supabase.auth.signOut()
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Request Body: (empty)
+
+Response:
+{
+  "success": true
+}
+
+================================================================================
+USER PROFILE ENDPOINTS
+================================================================================
+
+4. GET USER PROFILE
+-------------------
+Method: GET
+Endpoint: /user_profiles/{user_id}
+Supabase Table: user_profiles
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Response:
+{
+  "id": "uuid-here",
+  "username": "johndoe",
+  "email": "user@example.com",
+  "phone_number": "+1234567890",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+5. UPDATE USER PROFILE
+----------------------
+Method: PATCH
+Endpoint: /user_profiles/{user_id}
+Supabase Table: user_profiles
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "username": "newusername",
+  "phone_number": "+9876543210"
+}
+
+Response:
+{
+  "id": "uuid-here",
+  "username": "newusername",
+  "email": "user@example.com",
+  "phone_number": "+9876543210",
+  "updated_at": "2024-01-02T00:00:00Z"
+}
+
+================================================================================
+BUDGET ENDPOINTS
+================================================================================
+
+6. CREATE BUDGET
+----------------
+Method: POST
+Endpoint: /budgets
+Supabase Table: budgets
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "user_id": "uuid-here",
+  "total_amount": 1000.00,
+  "start_date": "2024-01-01",
+  "end_date": "2024-01-31",
+  "categories": ["Food", "Transport", "Entertainment", "Utilities"],
+  "status": "active"
+}
+
+Response:
+{
+  "id": "budget-uuid",
+  "user_id": "uuid-here",
+  "total_amount": 1000.00,
+  "spent_amount": 0.00,
+  "start_date": "2024-01-01",
+  "end_date": "2024-01-31",
+  "categories": ["Food", "Transport", "Entertainment", "Utilities"],
+  "status": "active",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+7. GET ALL BUDGETS
+------------------
+Method: GET
+Endpoint: /budgets?user_id={user_id}
+Supabase Table: budgets
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- status: active|completed|cancelled (optional)
+
+Response:
+{
+  "budgets": [
+    {
+      "id": "budget-uuid-1",
+      "user_id": "uuid-here",
+      "total_amount": 1000.00,
+      "spent_amount": 350.50,
+      "start_date": "2024-01-01",
+      "end_date": "2024-01-31",
+      "categories": ["Food", "Transport"],
+      "status": "active",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-01-15T00:00:00Z"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+8. UPDATE BUDGET
+----------------
+Method: PATCH
+Endpoint: /budgets/{budget_id}
+Supabase Table: budgets
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "total_amount": 1500.00,
+  "status": "active"
+}
+
+Response:
+{
+  "id": "budget-uuid",
+  "user_id": "uuid-here",
+  "total_amount": 1500.00,
+  "spent_amount": 350.50,
+  "status": "active",
+  "updated_at": "2024-01-16T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+9. DELETE BUDGET
+----------------
+Method: DELETE
+Endpoint: /budgets/{budget_id}
+Supabase Table: budgets
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Budget deleted successfully"
+}
+
+================================================================================
+EXPENSE ENDPOINTS
+================================================================================
+
+10. RECORD EXPENSE
+------------------
+Method: POST
+Endpoint: /expenses
+Supabase Table: expenses
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "user_id": "uuid-here",
+  "budget_id": "budget-uuid",
+  "amount": 45.50,
+  "category": "Food",
+  "description": "Grocery shopping",
+  "date": "2024-01-15",
+  "payment_method": "card"
+}
+
+Response:
+{
+  "id": "expense-uuid",
+  "user_id": "uuid-here",
+  "budget_id": "budget-uuid",
+  "amount": 45.50,
+  "category": "Food",
+  "description": "Grocery shopping",
+  "date": "2024-01-15",
+  "payment_method": "card",
+  "created_at": "2024-01-15T10:30:00Z"
+}
+
+Note: This automatically updates the budget's spent_amount via database trigger!
+
+--------------------------------------------------------------------------------
+
+11. GET ALL EXPENSES
+--------------------
+Method: GET
+Endpoint: /expenses?user_id={user_id}
+Supabase Table: expenses
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- budget_id: budget-uuid (optional)
+- category: Food|Transport|etc (optional)
+- start_date: 2024-01-01 (optional)
+- end_date: 2024-01-31 (optional)
+
+Response:
+{
+  "expenses": [
+    {
+      "id": "expense-uuid-1",
+      "user_id": "uuid-here",
+      "budget_id": "budget-uuid",
+      "amount": 45.50,
+      "category": "Food",
+      "description": "Grocery shopping",
+      "date": "2024-01-15",
+      "payment_method": "card",
+      "created_at": "2024-01-15T10:30:00Z"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+12. DELETE EXPENSE
+------------------
+Method: DELETE
+Endpoint: /expenses/{expense_id}
+Supabase Table: expenses
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Expense deleted successfully"
+}
+
+================================================================================
+GOAL ENDPOINTS
+================================================================================
+
+13. CREATE GOAL
+---------------
+Method: POST
+Endpoint: /goals
+Supabase Table: goals
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "user_id": "uuid-here",
+  "goal_type": "savings",
+  "title": "Emergency Fund",
+  "target_amount": 10000.00,
+  "current_amount": 0.00,
+  "deadline": "2024-12-31",
+  "priority_level": "high",
+  "status": "active"
+}
+
+Response:
+{
+  "id": "goal-uuid",
+  "user_id": "uuid-here",
+  "goal_type": "savings",
+  "title": "Emergency Fund",
+  "target_amount": 10000.00,
+  "current_amount": 0.00,
+  "deadline": "2024-12-31",
+  "priority_level": "high",
+  "status": "active",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+14. GET ALL GOALS
+-----------------
+Method: GET
+Endpoint: /goals?user_id={user_id}
+Supabase Table: goals
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- status: active|completed|cancelled (optional)
+- goal_type: savings|debt_reduction|investment|etc (optional)
+
+Response:
+{
+  "goals": [
+    {
+      "id": "goal-uuid-1",
+      "user_id": "uuid-here",
+      "goal_type": "savings",
+      "title": "Emergency Fund",
+      "target_amount": 10000.00,
+      "current_amount": 2500.00,
+      "deadline": "2024-12-31",
+      "priority_level": "high",
+      "status": "active",
+      "created_at": "2024-01-01T00:00:00Z",
+      "updated_at": "2024-03-15T00:00:00Z"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+15. UPDATE GOAL PROGRESS
+-------------------------
+Method: PATCH
+Endpoint: /goals/{goal_id}/progress
+Supabase Table: goals
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "current_amount": 3000.00
+}
+
+Response:
+{
+  "id": "goal-uuid",
+  "user_id": "uuid-here",
+  "title": "Emergency Fund",
+  "target_amount": 10000.00,
+  "current_amount": 3000.00,
+  "progress_percentage": 30.00,
+  "updated_at": "2024-03-20T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+16. UPDATE GOAL
+---------------
+Method: PATCH
+Endpoint: /goals/{goal_id}
+Supabase Table: goals
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "title": "Updated Emergency Fund",
+  "target_amount": 15000.00,
+  "priority_level": "high",
+  "status": "active"
+}
+
+Response:
+{
+  "id": "goal-uuid",
+  "user_id": "uuid-here",
+  "title": "Updated Emergency Fund",
+  "target_amount": 15000.00,
+  "current_amount": 3000.00,
+  "updated_at": "2024-03-20T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+17. DELETE GOAL
+---------------
+Method: DELETE
+Endpoint: /goals/{goal_id}
+Supabase Table: goals
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Response:
+{
+  "success": true,
+  "message": "Goal deleted successfully"
+}
+
+================================================================================
+TRANSACTION/PAYMENT ENDPOINTS
+================================================================================
+
+18. PROCESS PAYMENT
+-------------------
+Method: POST
+Endpoint: /transactions
+Supabase Table: transactions
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "user_id": "uuid-here",
+  "transaction_type": "payment",
+  "amount": 150.00,
+  "recipient": "Amazon",
+  "merchant_id": "merchant-123",
+  "payment_method": "card",
+  "description": "Online purchase",
+  "status": "completed"
+}
+
+Response:
+{
+  "id": "transaction-uuid",
+  "user_id": "uuid-here",
+  "transaction_type": "payment",
+  "amount": 150.00,
+  "recipient": "Amazon",
+  "merchant_id": "merchant-123",
+  "payment_method": "card",
+  "status": "completed",
+  "description": "Online purchase",
+  "created_at": "2024-01-15T14:30:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+19. GET TRANSACTION HISTORY
+----------------------------
+Method: GET
+Endpoint: /transactions?user_id={user_id}
+Supabase Table: transactions
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- transaction_type: payment|transfer|refund|deposit|withdrawal (optional)
+- status: pending|completed|failed|refunded (optional)
+- start_date: 2024-01-01 (optional)
+- end_date: 2024-01-31 (optional)
+
+Response:
+{
+  "transactions": [
+    {
+      "id": "transaction-uuid-1",
+      "user_id": "uuid-here",
+      "transaction_type": "payment",
+      "amount": 150.00,
+      "recipient": "Amazon",
+      "status": "completed",
+      "created_at": "2024-01-15T14:30:00Z"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+20. REQUEST REFUND
+------------------
+Method: PATCH
+Endpoint: /transactions/{transaction_id}/refund
+Supabase Table: transactions
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "status": "refunded"
+}
+
+Response:
+{
+  "id": "transaction-uuid",
+  "user_id": "uuid-here",
+  "transaction_type": "payment",
+  "amount": 150.00,
+  "status": "refunded",
+  "updated_at": "2024-01-16T10:00:00Z"
+}
+
+================================================================================
+GROUP SAVINGS ENDPOINTS
+================================================================================
+
+21. CREATE SAVINGS GROUP
+------------------------
+Method: POST
+Endpoint: /savings_groups
+Supabase Table: savings_groups
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "name": "Vacation Fund 2024",
+  "description": "Saving for our summer vacation",
+  "target_amount": 5000.00,
+  "created_by": "uuid-here"
+}
+
+Response:
+{
+  "id": "group-uuid",
+  "name": "Vacation Fund 2024",
+  "description": "Saving for our summer vacation",
+  "target_amount": 5000.00,
+  "current_amount": 0.00,
+  "created_by": "uuid-here",
+  "created_at": "2024-01-01T00:00:00Z",
+  "updated_at": "2024-01-01T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+22. GET USER'S GROUPS
+---------------------
+Method: GET
+Endpoint: /savings_groups?user_id={user_id}
+Supabase Table: savings_groups
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+
+Response:
+{
+  "groups": [
+    {
+      "id": "group-uuid-1",
+      "name": "Vacation Fund 2024",
+      "description": "Saving for our summer vacation",
+      "target_amount": 5000.00,
+      "current_amount": 1200.00,
+      "created_by": "uuid-here",
+      "created_at": "2024-01-01T00:00:00Z"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+23. ADD GROUP MEMBER
+--------------------
+Method: POST
+Endpoint: /group_members
+Supabase Table: group_members
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "group_id": "group-uuid",
+  "user_id": "member-user-uuid",
+  "contribution_amount": 0.00
+}
+
+Response:
+{
+  "id": "member-uuid",
+  "group_id": "group-uuid",
+  "user_id": "member-user-uuid",
+  "contribution_amount": 0.00,
+  "joined_at": "2024-01-05T00:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+24. RECORD GROUP CONTRIBUTION
+------------------------------
+Method: POST
+Endpoint: /group_members/{member_id}/contribute
+Supabase Table: group_members
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "amount": 250.00
+}
+
+Response:
+{
+  "id": "member-uuid",
+  "group_id": "group-uuid",
+  "user_id": "member-user-uuid",
+  "contribution_amount": 250.00,
+  "group_current_amount": 1450.00
+}
+
+Note: This automatically updates the group's current_amount!
+
+--------------------------------------------------------------------------------
+
+25. GET GROUP MEMBERS
+---------------------
+Method: GET
+Endpoint: /group_members?group_id={group_id}
+Supabase Table: group_members
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- group_id: group-uuid (required)
+
+Response:
+{
+  "members": [
+    {
+      "id": "member-uuid-1",
+      "group_id": "group-uuid",
+      "user_id": "member-user-uuid",
+      "contribution_amount": 250.00,
+      "joined_at": "2024-01-05T00:00:00Z",
+      "user_profile": {
+        "username": "johndoe",
+        "email": "john@example.com"
+      }
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+26. GET GROUP REPORT
+--------------------
+Method: GET
+Endpoint: /savings_groups/{group_id}/report
+Supabase Table: savings_groups + group_members (joined)
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Response:
+{
+  "group_id": "group-uuid",
+  "name": "Vacation Fund 2024",
+  "target_amount": 5000.00,
+  "current_amount": 1450.00,
+  "progress_percentage": 29.00,
+  "total_members": 4,
+  "members": [
+    {
+      "username": "johndoe",
+      "contribution": 250.00
+    },
+    {
+      "username": "janedoe",
+      "contribution": 400.00
+    }
+  ]
+}
+
+================================================================================
+NOTIFICATION ENDPOINTS
+================================================================================
+
+27. CREATE NOTIFICATION
+-----------------------
+Method: POST
+Endpoint: /notifications
+Supabase Table: notifications
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "user_id": "uuid-here",
+  "title": "Budget Alert",
+  "message": "You've reached 80% of your monthly budget",
+  "type": "warning",
+  "read": false
+}
+
+Response:
+{
+  "id": "notification-uuid",
+  "user_id": "uuid-here",
+  "title": "Budget Alert",
+  "message": "You've reached 80% of your monthly budget",
+  "type": "warning",
+  "read": false,
+  "created_at": "2024-01-20T15:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+28. GET USER NOTIFICATIONS
+---------------------------
+Method: GET
+Endpoint: /notifications?user_id={user_id}
+Supabase Table: notifications
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- read: true|false (optional)
+- type: info|warning|success|error (optional)
+
+Response:
+{
+  "notifications": [
+    {
+      "id": "notification-uuid-1",
+      "user_id": "uuid-here",
+      "title": "Budget Alert",
+      "message": "You've reached 80% of your monthly budget",
+      "type": "warning",
+      "read": false,
+      "created_at": "2024-01-20T15:00:00Z"
+    }
+  ]
+}
+
+--------------------------------------------------------------------------------
+
+29. MARK NOTIFICATION AS READ
+------------------------------
+Method: PATCH
+Endpoint: /notifications/{notification_id}/read
+Supabase Table: notifications
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "read": true
+}
+
+Response:
+{
+  "id": "notification-uuid",
+  "read": true,
+  "updated_at": "2024-01-20T16:00:00Z"
+}
+
+--------------------------------------------------------------------------------
+
+30. MARK ALL NOTIFICATIONS AS READ
+-----------------------------------
+Method: PATCH
+Endpoint: /notifications/mark-all-read
+Supabase Table: notifications
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}",
+  "Content-Type": "application/json"
+}
+
+Request Body:
+{
+  "user_id": "uuid-here"
+}
+
+Response:
+{
+  "success": true,
+  "count": 5,
+  "message": "5 notifications marked as read"
+}
+
+================================================================================
+ANALYTICS/REPORTS ENDPOINTS
+================================================================================
+
+31. GET MONTHLY SUMMARY
+-----------------------
+Method: GET
+Endpoint: /analytics/monthly-summary
+Supabase Table: expenses (aggregated)
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- year: 2024 (required)
+- month: 1 (required, 1-12)
+
+Response:
+{
+  "user_id": "uuid-here",
+  "year": 2024,
+  "month": 1,
+  "total_expenses": 1250.50,
+  "total_income": 3000.00,
+  "net_savings": 1749.50,
+  "expense_by_category": {
+    "Food": 450.00,
+    "Transport": 200.50,
+    "Entertainment": 300.00,
+    "Utilities": 300.00
+  },
+  "expense_count": 28,
+  "average_daily_expense": 41.85
+}
+
+--------------------------------------------------------------------------------
+
+32. GET SPENDING BY CATEGORY
+-----------------------------
+Method: GET
+Endpoint: /analytics/spending-by-category
+Supabase Table: expenses (aggregated)
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- start_date: 2024-01-01 (optional)
+- end_date: 2024-01-31 (optional)
+
+Response:
+{
+  "user_id": "uuid-here",
+  "period": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-01-31"
+  },
+  "categories": [
+    {
+      "category": "Food",
+      "total_amount": 450.00,
+      "transaction_count": 15,
+      "percentage": 36.0
+    },
+    {
+      "category": "Transport",
+      "total_amount": 200.50,
+      "transaction_count": 8,
+      "percentage": 16.0
+    }
+  ],
+  "total_spending": 1250.50
+}
+
+--------------------------------------------------------------------------------
+
+33. GENERATE INCOME STATEMENT
+------------------------------
+Method: GET
+Endpoint: /analytics/income-statement
+Supabase Table: transactions + expenses (aggregated)
+
+Request Headers:
+{
+  "Authorization": "Bearer {access_token}"
+}
+
+Query Parameters:
+- user_id: uuid-here (required)
+- start_date: 2024-01-01 (required)
+- end_date: 2024-01-31 (required)
+
+Response:
+{
+  "user_id": "uuid-here",
+  "period": {
+    "start_date": "2024-01-01",
+    "end_date": "2024-01-31"
+  },
+  "income": {
+    "salary": 3000.00,
+    "other": 200.00,
+    "total": 3200.00
+  },
+  "expenses": {
+    "total": 1250.50,
+    "by_category": {
+      "Food": 450.00,
+      "Transport": 200.50,
+      "Entertainment": 300.00,
+      "Utilities": 300.00
+    }
+  },
+  "net_income": 1949.50,
+  "savings_rate": 60.95
+}
+
+================================================================================
+COMMON HTTP STATUS CODES
+================================================================================
+
+200 OK - Request successful
+201 Created - Resource created successfully
+204 No Content - Request successful, no content to return
+400 Bad Request - Invalid request parameters
+401 Unauthorized - Missing or invalid authentication token
+403 Forbidden - User doesn't have permission to access resource
+404 Not Found - Resource not found
+409 Conflict - Resource already exists or conflict with current state
+422 Unprocessable Entity - Validation errors
+500 Internal Server Error - Server error
+
+================================================================================
+ERROR RESPONSE FORMAT
+================================================================================
+
+{
+  "error": {
+    "code": "INVALID_REQUEST",
+    "message": "Invalid request parameters",
+    "details": {
+      "field": "amount",
+      "reason": "Amount must be greater than 0"
+    }
+  }
+}
+
+================================================================================
+PAGINATION (For endpoints returning lists)
+================================================================================
+
+Query Parameters:
+- limit: 20 (default: 10, max: 100)
+- offset: 0 (default: 0)
+- order_by: created_at (default varies by endpoint)
+- order: desc|asc (default: desc)
+
+Response Format:
+{
+  "data": [...],
+  "pagination": {
+    "total": 150,
+    "limit": 20,
+    "offset": 0,
+    "has_more": true
+  }
+}
+
+================================================================================
+TESTING TIPS
+================================================================================
+
+1. POSTMAN/INSOMNIA SETUP:
+   - Import environment variables
+   - Set up pre-request scripts to get fresh tokens
+   - Use collection variables for user_id, budget_id, etc.
+
+2. CURL EXAMPLES:
+
+# Signup
+curl -X POST https://pptfhnzffcqlrjimvmot.supabase.co/auth/v1/signup \
+  -H "apikey: sb_publishable_-KuMy3MKK7P4i3DfHVevhg_eifll1wi" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"Test123!","data":{"username":"testuser"}}'
+
+# Login
+curl -X POST https://pptfhnzffcqlrjimvmot.supabase.co/auth/v1/token?grant_type=password \
+  -H "apikey: sb_publishable_-KuMy3MKK7P4i3DfHVevhg_eifll1wi" \
+  -H "Content-Type: application/json" \
+  -d '{"email":"test@example.com","password":"Test123!"}'
+
+# Create Budget (requires access_token from login)
+curl -X POST https://pptfhnzffcqlrjimvmot.supabase.co/rest/v1/budgets \
+  -H "apikey: sb_publishable_-KuMy3MKK7P4i3DfHVevhg_eifll1wi" \
+  -H "Authorization: Bearer {access_token}" \
+  -H "Content-Type: application/json" \
+  -d '{"user_id":"uuid-here","total_amount":1000,"start_date":"2024-01-01","end_date":"2024-01-31","categories":["Food","Transport"]}'
+
+3. AUTHENTICATION FLOW:
+   a. Signup to create account
+   b. Login to get access_token
+   c. Use access_token in Authorization header for all subsequent requests
+   d. Token expires after 1 hour - use refresh_token to get new access_token
+
+4. DATABASE TRIGGERS TO TEST:
+   - Create expense → Check budget spent_amount updates automatically
+   - Add group contribution → Check group current_amount updates
+   - Update records → Check updated_at timestamp changes
+
+5. ROW LEVEL SECURITY TO TEST:
+   - Try accessing another user's data (should fail with 403)
+   - Try creating resources for another user (should fail)
+   - Group members should see group data, non-members shouldn't
+
+================================================================================
+TROUBLESHOOTING
+================================================================================
+
+1. "Invalid API key" - Check REACT_APP_SUPABASE_ANON_KEY is correct
+2. "JWT expired" - Token expired, login again to get new token
+3. "Row level security policy violation" - User doesn't have permission
+4. "Relation does not exist" - Run supabase-setup.sql first
+5. "Foreign key violation" - Referenced record doesn't exist
+
+================================================================================
+PRODUCTION DEPLOYMENT NOTES
+================================================================================
+
+1. Never expose SUPABASE_SECRET_KEY in frontend
+2. Use environment-specific .env files
+3. Enable RLS on all tables in production
+4. Set up rate limiting on authentication endpoints
+5. Monitor API usage in Supabase dashboard
+6. Set up error logging and alerting
+7. Use HTTPS only in production
+8. Implement request validation on all endpoints
+
+================================================================================
+END OF API TESTING GUIDE
+================================================================================
+
+For more information, see:
+- COMPLETE_INTEGRATION.md - Technical implementation details
+- FULL_INTEGRATION_SUMMARY.md - User-friendly overview
+- README_SUPABASE.md - Supabase integration guide
