@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
+<suite name="SigmaPay Complete Test Suite" parallel="tests" thread-count="3" verbose="1">
+    
+    <parameter name="browser" value="chrome"/>
+    <parameter name="baseUrl" value="http://localhost:5173"/>
+    
+    <listeners>
+        <listener class-name="com.sigmapay.utils.TestListener"/>
+        <listener class-name="com.sigmapay.utils.ExtentReportListener"/>
+    </listeners>
+    
+    <!-- Smoke Test Suite - Critical Path -->
+    <test name="Smoke Tests" preserve-order="true">
+        <classes>
+            <class name="com.sigmapay.tests.LoginTest">
+                <methods>
+                    <include name="testValidLogin"/>
+                </methods>
+            </class>
+            <class name="com.sigmapay.tests.BudgetTest">
+                <methods>
+                    <include name="testCreateBudget"/>
+                </methods>
+            </class>
+            <class name="com.sigmapay.tests.PaymentTest">
+                <methods>
+                    <include name="testMakePayment"/>
+                </methods>
+            </class>
+        </classes>
+    </test>
+    
+    <!-- Authentication Test Suite -->
+    <test name="Authentication Tests">
+        <classes>
+            <class name="com.sigmapay.tests.LoginTest"/>
+            <class name="com.sigmapay.tests.SignupTest"/>
+            <class name="com.sigmapay.tests.LogoutTest"/>
+        </classes>
+    </test>
+    
+    <!-- Budget Management Test Suite -->
+    <test name="Budget Management Tests">
+        <classes>
+            <class name="com.sigmapay.tests.BudgetTest"/>
+            <class name="com.sigmapay.tests.ExpenseTest"/>
+        </classes>
+    </test>
+    
+    <!-- Goals Test Suite -->
+    <test name="Goals Management Tests">
+        <classes>
+            <class name="com.sigmapay.tests.GoalsTest"/>
+        </classes>
+    </test>
+    
+    <!-- Payments & Transactions Test Suite -->
+    <test name="Payments and Transactions Tests">
+        <classes>
+            <class name="com.sigmapay.tests.PaymentTest"/>
+            <class name="com.sigmapay.tests.TransactionHistoryTest"/>
+        </classes>
+    </test>
+    
+    <!-- Group Savings Test Suite -->
+    <test name="Group Savings Tests">
+        <classes>
+            <class name="com.sigmapay.tests.GroupSavingsTest"/>
+            <class name="com.sigmapay.tests.GroupMembersTest"/>
+        </classes>
+    </test>
+    
+    <!-- Notifications Test Suite -->
+    <test name="Notifications Tests">
+        <classes>
+            <class name="com.sigmapay.tests.NotificationsTest"/>
+        </classes>
+    </test>
+    
+    <!-- Profile Test Suite -->
+    <test name="Profile Management Tests">
+        <classes>
+            <class name="com.sigmapay.tests.ProfileTest"/>
+        </classes>
+    </test>
+    
+    <!-- Reports & Analytics Test Suite -->
+    <test name="Reports and Analytics Tests">
+        <classes>
+            <class name="com.sigmapay.tests.ReportsTest"/>
+        </classes>
+    </test>
+    
+    <!-- Dashboard Test Suite -->
+    <test name="Dashboard Tests">
+        <classes>
+            <class name="com.sigmapay.tests.DashboardTest"/>
+        </classes>
+    </test>
+    
+    <!-- Landing Page Test Suite -->
+    <test name="Landing Page Tests">
+        <classes>
+            <class name="com.sigmapay.tests.LandingPageTest"/>
+        </classes>
+    </test>
+    
+    <!-- Regression Test Suite - All Tests -->
+    <test name="Regression Tests" enabled="false">
+        <packages>
+            <package name="com.sigmapay.tests"/>
+        </packages>
+    </test>
+    
+</suite>
