@@ -1,0 +1,31 @@
+@startuml Initial_Class_Diagram
+
+title Initial Class Diagram (Before Refactoring)
+
+class ReportGenerator {
+  - reportType: String
+  - rawData: String
+  + {static} DEFAULT_FOOTER: String
+  --
+  + ReportGenerator(rawData: String, reportType: String)
+  + generateReport(): String
+  + printStatus(): void
+}
+
+class DataProcessor {
+  + {static} processData(data: String): String
+}
+
+ReportGenerator ..> DataProcessor : uses
+
+note right of ReportGenerator
+  Design Problems:
+  - Long Method (generateReport)
+  - Conditional Complexity (if/else)
+  - Large Class
+  - Magic Strings
+  - Dead Code (printStatus)
+  - Poor Encapsulation
+end note
+
+@enduml

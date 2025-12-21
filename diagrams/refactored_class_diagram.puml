@@ -1,0 +1,98 @@
+@startuml Refactored_Class_Diagram
+
+title Refactored Class Diagram (After Refactoring)
+
+package "srt.model" {
+  class ReportGenerator {
+    - reportType: String
+    - rawData: String
+    --
+    + ReportGenerator(rawData: String, reportType: String)
+    + generateReport(): String
+    + getReportType(): String
+    + setReportType(type: String): void
+    - getRawData(): String
+    - setRawData(data: String): void
+    - validateData(): boolean
+    - processRawData(): String
+    - formatReport(data: String): String
+  }
+  
+  class ReportConstants <<final>> {
+    + {static} REPORT_TYPE_PDF: String
+    + {static} REPORT_TYPE_CSV: String
+    + {static} DEFAULT_FOOTER: String
+    + {static} ERROR_NO_DATA: String
+    + {static} ERROR_UNSUPPORTED_TYPE: String
+    --
+    - ReportConstants()
+  }
+}
+
+package "srt.formatter" {
+  interface ReportFormatter {
+    + format(processedData: String): String
+    + getHeader(): String
+    + getBody(processedData: String): String
+    + getFooter(): String
+  }
+  
+  class PDFReportFormatter {
+    + format(processedData: String): String
+    + getHeader(): String
+    + getBody(processedData: String): String
+    + getFooter(): String
+  }
+  
+  class CSVReportFormatter {
+    + format(processedData: String): String
+    + getHeader(): String
+    + getBody(processedData: String): String
+    + getFooter(): String
+    - formatCSVData(processedData: String): String
+  }
+  
+  class ReportFormatterFactory <<factory>> {
+    + {static} createFormatter(type: String): ReportFormatter
+  }
+}
+
+package "srt.processor" {
+  class DataProcessor {
+    + {static} processData(data: String): String
+  }
+}
+
+' Relationships
+ReportFormatter <|.. PDFReportFormatter : implements
+ReportFormatter <|.. CSVReportFormatter : implements
+ReportFormatterFactory ..> ReportFormatter : creates
+ReportFormatterFactory ..> PDFReportFormatter : creates
+ReportFormatterFactory ..> CSVReportFormatter : creates
+ReportGenerator ..> ReportFormatterFactory : uses
+ReportGenerator ..> DataProcessor : uses
+ReportGenerator ..> ReportConstants : uses
+PDFReportFormatter ..> ReportConstants : uses
+CSVReportFormatter ..> ReportConstants : uses
+
+note right of ReportFormatter
+  Extract Interface (Refactoring #4)
+  Supports Dependency Inversion
+end note
+
+note bottom of PDFReportFormatter
+  Replace Conditional with 
+  Polymorphism (Refactoring #2)
+  Move Method (Refactoring #3)
+end note
+
+note bottom of ReportGenerator
+  Improvements:
+  - Extract Method (#1)
+  - Encapsulate Field (#6)
+  - Self Encapsulate Field (#8)
+  - Remove Unused Code (#5)
+  - Uses Constants (#7)
+end note
+
+@enduml
