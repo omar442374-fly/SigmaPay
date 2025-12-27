@@ -1,0 +1,110 @@
+# SigmaPay Payment Service Configuration
+
+server:
+  port: 8080
+  tomcat:
+    # Optimize Tomcat for low latency
+    threads:
+      max: 200        # Handle burst traffic
+      min-spare: 20   # Keep threads ready
+    max-connections: 10000
+    accept-count: 100
+    connection-timeout: 20000
+
+spring:
+  application:
+    name: sigmapay-payment-service
+  
+  # LOW-LATENCY PATTERN #5: Connection Pooling with HikariCP
+  # HikariCP is the fastest JDBC connection pool
+  datasource:
+    url: jdbc:h2:mem:sigmapay
+    driverClassName: org.h2.Driver
+    username: sa
+    password:
+    hikari:
+      # Sized for 100 RPS with some buffer
+      maximum-pool-size: 20
+      minimum-idle: 5
+      connection-timeout: 3000       # Fast fail if pool exhausted
+      idle-timeout: 600000
+      max-lifetime: 1800000
+      pool-name: SigmaPayHikariPool
+      # Optimize connection pool
+      auto-commit: true
+      connection-test-query: SELECT 1
+      leak-detection-threshold: 60000
+  
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    hibernate:
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: false
+        # Optimize batch operations
+        jdbc:
+          batch_size: 20
+          fetch_size: 50
+        # Second-level cache disabled (using Caffeine instead)
+        cache:
+          use_second_level_cache: false
+  
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+# Resilience4j Circuit Breaker Configuration
+# LOW-LATENCY PATTERN #4: Circuit Breaker
+resilience4j:
+  circuitbreaker:
+    instances:
+      paymentGateway:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+        eventConsumerBufferSize: 10
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 2s
+
+# Actuator endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,metrics,prometheus,info
+  endpoint:
+    health:
+      show-details: always
+    metrics:
+      enabled: true
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+    distribution:
+      # Enable percentile histograms for latency tracking
+      percentiles-histogram:
+        http.server.requests: true
+        payment.process: true
+      # Track P95, P99 percentiles
+      percentiles:
+        http.server.requests: 0.5, 0.95, 0.99
+        payment.process: 0.5, 0.95, 0.99
+      slo:
+        # Define SLO boundary at 200ms
+        http.server.requests: 100ms, 200ms, 500ms, 1s
+
+# Logging configuration
+logging:
+  level:
+    root: INFO
+    com.sigmapay.payment: DEBUG
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} - %msg%n"

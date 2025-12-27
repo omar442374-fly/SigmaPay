@@ -1,0 +1,49 @@
+# Maven
+payment-service/target/
+payment-service/*.jar
+payment-service/*.war
+payment-service/*.ear
+payment-service/*.class
+payment-service/.mvn/
+payment-service/mvnw
+payment-service/mvnw.cmd
+
+# IDE
+.idea/
+*.iml
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+payment-service/service.log
+payment-service/logs/
+
+# Test results
+load-tests/*.html
+load-tests/*.json
+k6-results/
+
+# Temporary files
+*.tmp
+*.bak
+.cache/
+
+# OS files
+Thumbs.db
+.DS_Store
+
+# Build artifacts
+dist/
+build/
+
+# Node modules (if using npm for anything)
+node_modules/
+package-lock.json
+
+# Environment
+.env
+.env.local
