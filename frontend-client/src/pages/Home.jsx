@@ -8,7 +8,7 @@ function Home() {
   const navigate = useNavigate();
   const { isAuthenticated } = useAuth();
 
-  const handleAuthNavigation = (e: React.MouseEvent<HTMLAnchorElement>, defaultPath: string) => {
+  const handleAuthNavigation = (e: React.MouseEvent<HTMLButtonElement | HTMLAnchorElement>, defaultPath: string) => {
     e.preventDefault();
     if (isAuthenticated()) {
       navigate('/dashboard');
@@ -38,21 +38,19 @@ function Home() {
                 Manage your money, achieve your goals, and build wealth with our all-in-one financial platform.
               </p>
               <div className="flex flex-col sm:flex-row justify-center md:justify-start space-y-4 sm:space-y-0 sm:space-x-4 animate-slide-up" style={{ animationDelay: '200ms' }}>
-                <a
-                  href="#"
+                <button
                   onClick={(e) => handleAuthNavigation(e, '/signup')}
                   className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform duration-300 hover:scale-105 flex items-center justify-center"
                 >
                   {isAuthenticated() ? 'Go to Dashboard' : 'Get Started Free'}
                   <HiOutlineArrowNarrowRight className="ml-2" />
-                </a>
-                <a
-                  href="#"
+                </button>
+                <button
                   onClick={(e) => handleAuthNavigation(e, '/login')}
                   className="bg-white border-2 border-indigo-600 text-indigo-700 hover:bg-indigo-50 px-8 py-3 rounded-full text-lg font-semibold shadow-md transition-transform duration-300 hover:scale-105"
                 >
                   {isAuthenticated() ? 'Dashboard' : 'Login'}
-                </a>
+                </button>
               </div>
               <div className="mt-6 text-gray-600 text-sm animate-fade-in" style={{ animationDelay: '400ms' }}>
                 <p>No credit card required • Free plan available</p>
@@ -263,14 +261,13 @@ function Home() {
           </div>
 
           <div className="text-center mt-10 animate-fade-in" style={{ animationDelay: '800ms' }}>
-            <a
-              href="#"
+            <button
               onClick={(e) => handleAuthNavigation(e, '/signup')}
               className="bg-indigo-600 hover:bg-indigo-700 text-white px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-transform duration-300 hover:scale-105 inline-flex items-center"
             >
               {isAuthenticated() ? 'Go to Dashboard' : 'Join Them Today'}
               <HiOutlineArrowNarrowRight className="ml-2" />
-            </a>
+            </button>
           </div>
         </div>
 
@@ -281,20 +278,18 @@ function Home() {
             Join thousands of users who have transformed their financial lives with SigmaPay.
           </p>
           <div className="flex flex-col sm:flex-row justify-center space-y-4 sm:space-y-0 sm:space-x-4 animate-slide-up" style={{ animationDelay: '200ms' }}>
-            <a
-              href="#"
+            <button
               onClick={(e) => handleAuthNavigation(e, '/signup')}
               className="bg-white text-indigo-600 hover:bg-gray-100 px-8 py-3 rounded-full text-lg font-semibold shadow-lg transition-all duration-300 hover:scale-105 hover:shadow-xl"
             >
               {isAuthenticated() ? 'Go to Dashboard' : 'Get Started Free'}
-            </a>
-            <a
-              href="#"
+            </button>
+            <button
               onClick={(e) => handleAuthNavigation(e, isAuthenticated() ? '/dashboard' : '/login')}
               className="bg-transparent border-2 border-white text-white hover:bg-white/10 px-8 py-3 rounded-full text-lg font-semibold transition-all duration-300 hover:scale-105 hover:shadow-xl"
             >
               {isAuthenticated() ? 'View Dashboard' : 'Login'}
-            </a>
+            </button>
           </div>
         </div>
       </div>
@@ -309,13 +304,13 @@ function Home() {
                 Empowering your financial journey with innovation and trust.
               </p>
               <div className="flex space-x-4 text-indigo-700 text-xl">
-                <a href="#" className="hover:text-indigo-500 transition" aria-label="Twitter">
+                <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition" aria-label="Twitter">
                   <FaTwitter />
                 </a>
-                <a href="#" className="hover:text-indigo-500 transition" aria-label="Instagram">
+                <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition" aria-label="Instagram">
                   <FaInstagram />
                 </a>
-                <a href="#" className="hover:text-indigo-500 transition" aria-label="LinkedIn">
+                <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" className="hover:text-indigo-500 transition" aria-label="LinkedIn">
                   <FaLinkedin />
                 </a>
               </div>
@@ -334,16 +329,16 @@ function Home() {
               <h3 className="text-lg font-semibold text-indigo-700 mb-4">Company</h3>
               <ul className="space-y-2 text-gray-600">
                 <li><Link to="/" className="hover:text-indigo-500 transition">About Us</Link></li>
-                <li><a href="#" className="hover:text-indigo-500 transition">Contact</a></li>
+                <li><Link to="/" className="hover:text-indigo-500 transition">Contact</Link></li>
               </ul>
             </div>
 
             <div>
               <h3 className="text-lg font-semibold text-indigo-700 mb-4">Resources</h3>
               <ul className="space-y-2 text-gray-600">
-                <li><a href="#" className="hover:text-indigo-500 transition">Help Center</a></li>
-                <li><a href="#" className="hover:text-indigo-500 transition">Privacy Policy</a></li>
-                <li><a href="#" className="hover:text-indigo-500 transition">Terms of Service</a></li>
+                <li><Link to="/" className="hover:text-indigo-500 transition">Help Center</Link></li>
+                <li><Link to="/" className="hover:text-indigo-500 transition">Privacy Policy</Link></li>
+                <li><Link to="/" className="hover:text-indigo-500 transition">Terms of Service</Link></li>
               </ul>
             </div>
           </div>
@@ -353,9 +348,9 @@ function Home() {
               &copy; {new Date().getFullYear()} SIGMAPAY. All rights reserved.
             </p>
             <div className="flex space-x-6 text-sm text-gray-500">
-              <a href="#" className="hover:text-indigo-500 transition">Privacy Policy</a>
-              <a href="#" className="hover:text-indigo-500 transition">Terms of Service</a>
-              <a href="#" className="hover:text-indigo-500 transition">Cookies</a>
+              <Link to="/" className="hover:text-indigo-500 transition">Privacy Policy</Link>
+              <Link to="/" className="hover:text-indigo-500 transition">Terms of Service</Link>
+              <Link to="/" className="hover:text-indigo-500 transition">Cookies</Link>
             </div>
           </div>
         </div>
