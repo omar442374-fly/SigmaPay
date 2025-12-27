@@ -1,0 +1,48 @@
+{
+  "metrics": {
+    "http_req_duration": {
+      "values": {
+        "min": 0.95,
+        "avg": 2.18,
+        "med": 1.87,
+        "max": 156.23,
+        "p(90)": 3.42,
+        "p(95)": 4.87,
+        "p(99)": 8.91
+      }
+    },
+    "create_goal_duration": {
+      "values": {
+        "avg": 2.45,
+        "p(95)": 5.23
+      }
+    },
+    "track_progress_duration": {
+      "values": {
+        "avg": 2.05,
+        "p(95)": 4.65
+      }
+    },
+    "http_reqs": {
+      "values": {
+        "count": 30125,
+        "rate": 100.41
+      }
+    },
+    "goals_processed": {
+      "values": {
+        "count": 30105
+      }
+    },
+    "cache_hit_rate": {
+      "values": {
+        "rate": 0.682
+      }
+    },
+    "http_req_failed": {
+      "values": {
+        "rate": 0
+      }
+    }
+  }
+}

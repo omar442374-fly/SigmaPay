@@ -12,6 +12,7 @@ import {
 } from './services/services';
 import { OptimizedPaymentsServiceBL } from './services/optimizedPaymentService';
 import { OptimizedReportingService } from './services/optimizedReportingService';
+import { OptimizedGoalService } from './services/optimizedGoalService';
 import {
   AccountsRepositoryImpl,
   UserRepositoryImpl,
@@ -54,7 +55,7 @@ function initializeApp(): Application {
   // SERVICE LAYER - Initialize Services with Dependency Injection
   const accountService = new AccountService(accountsRepository, userRepository);
   const budgetService = new BudgetService(budgetRepository, transactionRepository);
-  const goalService = new GoalService(goalRepository);
+  const goalService = new OptimizedGoalService(goalRepository);
   const groupSavingsService = new GroupSavingsService(groupSavingsRepository);
   // Use optimized services for low-latency performance
   const paymentsService = new OptimizedPaymentsServiceBL(paymentRepository);
