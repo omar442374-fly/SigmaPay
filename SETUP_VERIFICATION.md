@@ -158,10 +158,10 @@ Registration is working correctly when:
 
 The `.env` file is **NOT** committed to git for security reasons (it's in `.gitignore`). 
 
-For your information, the file has been created with these values:
+The file has been created with the correct Supabase credentials:
 ```env
 REACT_APP_SUPABASE_URL=https://pptfhnzffcqlrjimvmot.supabase.co
-REACT_APP_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+REACT_APP_SUPABASE_ANON_KEY=<your_actual_anon_key_configured>
 ```
 
 The file is located at: `frontend-client/.env`

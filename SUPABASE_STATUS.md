@@ -12,7 +12,7 @@ Your SigmaPay application is now configured with Supabase database credentials.
 
 1. **Supabase Client Configured**
    - Project URL: `https://pptfhnzffcqlrjimvmot.supabase.co`
-   - Anon key: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` (JWT format - correct!)
+   - Anon key: Configured (JWT format - correct!)
    - Environment file created at `frontend-client/.env`
 
 2. **Application Verified**

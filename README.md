@@ -27,13 +27,14 @@ This software solution helps individuals manage their personal finances by makin
    
    **IMPORTANT:** Before running the app, you must create the database tables:
    
-   a. Go to [Supabase Dashboard](https://app.supabase.com)
-   b. Open your project
-   c. Navigate to **SQL Editor** (left sidebar)
-   d. Click **New Query**
-   e. Copy the entire content from `frontend-client/supabase-setup.sql`
-   f. Paste in the SQL editor
-   g. Click **Run** to execute
+   a. Verify the SQL setup file exists: `frontend-client/supabase-setup.sql`
+   b. Go to [Supabase Dashboard](https://app.supabase.com)
+   c. Open your project
+   d. Navigate to **SQL Editor** (left sidebar)
+   e. Click **New Query**
+   f. Copy the entire content from `frontend-client/supabase-setup.sql`
+   g. Paste in the SQL editor
+   h. Click **Run** to execute
 
    This will create all necessary tables:
    - user_profiles
