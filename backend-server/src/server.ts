@@ -11,6 +11,7 @@ import {
   NotificationServiceBL,
 } from './services/services';
 import { OptimizedPaymentsServiceBL } from './services/optimizedPaymentService';
+import { OptimizedReportingService } from './services/optimizedReportingService';
 import {
   AccountsRepositoryImpl,
   UserRepositoryImpl,
@@ -55,9 +56,9 @@ function initializeApp(): Application {
   const budgetService = new BudgetService(budgetRepository, transactionRepository);
   const goalService = new GoalService(goalRepository);
   const groupSavingsService = new GroupSavingsService(groupSavingsRepository);
-  // Use optimized payment service for low-latency performance
+  // Use optimized services for low-latency performance
   const paymentsService = new OptimizedPaymentsServiceBL(paymentRepository);
-  const reportingService = new ReportingService(transactionRepository);
+  const reportingService = new OptimizedReportingService(transactionRepository);
   const notificationService = new NotificationServiceBL(notificationRepository);
 
   console.log('Services initialized with repository dependencies');
