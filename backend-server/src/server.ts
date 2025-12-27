@@ -10,6 +10,7 @@ import {
   ReportingService,
   NotificationServiceBL,
 } from './services/services';
+import { OptimizedPaymentsServiceBL } from './services/optimizedPaymentService';
 import {
   AccountsRepositoryImpl,
   UserRepositoryImpl,
@@ -54,7 +55,8 @@ function initializeApp(): Application {
   const budgetService = new BudgetService(budgetRepository, transactionRepository);
   const goalService = new GoalService(goalRepository);
   const groupSavingsService = new GroupSavingsService(groupSavingsRepository);
-  const paymentsService = new PaymentsServiceBL(paymentRepository);
+  // Use optimized payment service for low-latency performance
+  const paymentsService = new OptimizedPaymentsServiceBL(paymentRepository);
   const reportingService = new ReportingService(transactionRepository);
   const notificationService = new NotificationServiceBL(notificationRepository);
 
