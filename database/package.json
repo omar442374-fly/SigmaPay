@@ -1,0 +1,21 @@
+{
+  "name": "sigmapay-database",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "seed": "node seed/seed.js"
+  },
+  "keywords": [
+    "mongodb",
+    "atlas",
+    "mongoose",
+    "sigmapay"
+  ],
+  "author": "SigmaPay Team",
+  "license": "ISC",
+  "description": "MongoDB Atlas data layer for SigmaPay — models, repositories, and seed script.",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "mongoose": "^8.9.5"
+  }
+}
