@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface ReportsPageProps {
-  userId: string;
-}
+const ReportsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const ReportsPage: React.FC<ReportsPageProps> = ({ userId }) => {
   const [monthlySummary, setMonthlySummary] = useState('');
   const [incomeStatement, setIncomeStatement] = useState('');
   const [loading, setLoading] = useState(false);
@@ -16,7 +16,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ userId }) => {
     setLoading(false);
     
     if (response.success) {
-      setMonthlySummary(response.report);
+      const report = (response as any).report || JSON.stringify(response, null, 2);
+      setMonthlySummary(report);
     } else {
       setMonthlySummary('Failed to generate monthly summary');
     }
@@ -28,7 +29,8 @@ const ReportsPage: React.FC<ReportsPageProps> = ({ userId }) => {
     setLoading(false);
     
     if (response.success) {
-      setIncomeStatement(response.report);
+      const statement = (response as any).statement || (response as any).report || JSON.stringify(response, null, 2);
+      setIncomeStatement(statement);
     } else {
       setIncomeStatement('Failed to generate income statement');
     }

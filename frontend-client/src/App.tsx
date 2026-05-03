@@ -1,6 +1,13 @@
-import React, { useState } from 'react';
-import Header from './components/Header';
-import AuthPage from './pages/AuthPage';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { AuthProvider } from './contexts/AuthContext';
+import MainLayout from './layouts/MainLayout';
+import ProtectedLayout from './layouts/ProtectedLayout';
+
+// Pages
+import Home from './pages/Home.jsx';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
+import Dashboard from './pages/Dashboard.jsx';
 import BudgetPage from './pages/BudgetPage';
 import GoalsPage from './pages/GoalsPage';
 import ReportsPage from './pages/ReportsPage';
@@ -9,77 +16,38 @@ import PaymentsPage from './pages/PaymentsPage';
 import GroupSavingsPage from './pages/GroupSavingsPage';
 import NotificationsPage from './pages/NotificationsPage';
 
-type Page = 'auth' | 'budgets' | 'goals' | 'reports' | 'profile' | 'payments' | 'groups' | 'notifications';
-
-const App: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState<Page>('auth');
-  const [userId, setUserId] = useState<string | null>(null);
-
-  const handleLoginSuccess = (id: string) => {
-    setUserId(id);
-    setCurrentPage('budgets');
-  };
-
-  const handleNavigate = (page: string) => {
-    setCurrentPage(page as Page);
-  };
-
+function App() {
   return (
-    <div style={styles.app}>
-      <Header currentPage={currentPage} onNavigate={handleNavigate} userId={userId} />
-      
-      <main style={styles.main}>
-        {currentPage === 'auth' && <AuthPage onLoginSuccess={handleLoginSuccess} />}
-        {currentPage === 'budgets' && userId && <BudgetPage userId={userId} />}
-        {currentPage === 'goals' && userId && <GoalsPage userId={userId} />}
-        {currentPage === 'reports' && userId && <ReportsPage userId={userId} />}
-        {currentPage === 'profile' && userId && <ProfilePage userId={userId} />}
-        {currentPage === 'payments' && userId && <PaymentsPage userId={userId} />}
-        {currentPage === 'groups' && userId && <GroupSavingsPage userId={userId} />}
-        {currentPage === 'notifications' && userId && <NotificationsPage userId={userId} />}
-      </main>
+    <AuthProvider>
+      <Router>
+        <Routes>
+          {/* Main Layout with Navbar for all routes */}
+          <Route element={<MainLayout />}>
+            {/* Public Routes */}
+            <Route path="/" element={<Home />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/signup" element={<Signup />} />
 
-      <footer style={styles.footer}>
-        <p style={styles.footerText}>
-          SigmaPay © 2024 - Personal Finance Management System
-        </p>
-        <p style={styles.footerSubtext}>
-          Built with React & TypeScript | Backend: Node.js & Express
-        </p>
-      </footer>
-    </div>
+            {/* Protected Routes - require authentication */}
+            <Route element={<ProtectedLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/budgets" element={<BudgetPage />} />
+              <Route path="/goals" element={<GoalsPage />} />
+              <Route path="/reports" element={<ReportsPage />} />
+              <Route path="/profile" element={<ProfilePage />} />
+              <Route path="/payments" element={<PaymentsPage />} />
+              <Route path="/groups" element={<GroupSavingsPage />} />
+              <Route path="/notifications" element={<NotificationsPage />} />
+            </Route>
+
+            {/* Catch-all route - redirect to home */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Route>
+        </Routes>
+      </Router>
+    </AuthProvider>
   );
-};
-
-const styles: { [key: string]: React.CSSProperties } = {
-  app: {
-    minHeight: '100vh',
-    display: 'flex',
-    flexDirection: 'column',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-  },
-  main: {
-    flex: 1,
-    paddingBottom: '80px',
-  },
-  footer: {
-    background: 'linear-gradient(135deg, #2d3748 0%, #1a202c 100%)',
-    color: 'white',
-    padding: '30px 20px',
-    textAlign: 'center',
-    marginTop: 'auto',
-    boxShadow: '0 -4px 20px rgba(0, 0, 0, 0.1)',
-  },
-  footerText: {
-    margin: '8px 0',
-    fontSize: '15px',
-    fontWeight: '500',
-  },
-  footerSubtext: {
-    margin: '8px 0',
-    fontSize: '13px',
-    opacity: 0.8,
-  },
-};
+}
 
 export default App;
+

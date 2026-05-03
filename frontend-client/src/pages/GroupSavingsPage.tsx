@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface GroupSavingsPageProps {
-  userId: string;
-}
+const GroupSavingsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
   const [groupName, setGroupName] = useState('');
   const [members, setMembers] = useState('');
   const [addMemberGroupId, setAddMemberGroupId] = useState('');
@@ -19,12 +19,15 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
   const handleCreateGroup = async (e: React.FormEvent) => {
     e.preventDefault();
     const membersList = members.split(',').map(m => m.trim());
-    const response = await apiClient.createGroup(groupName, membersList);
-    if (response.success && response.group) {
-      setMessage(`Group created successfully! Group ID: ${response.group.groupId}`);
-      setAddMemberGroupId(response.group.groupId);
-      setDepositGroupId(response.group.groupId);
-      setReportGroupId(response.group.groupId);
+    const response = await apiClient.createGroup(groupName, membersList, userId);
+    if (response.success) {
+      const groupId = (response as any).groupId || (response as any).group?.id;
+      setMessage(`Group created successfully! Group ID: ${groupId}`);
+      if (groupId) {
+        setAddMemberGroupId(groupId);
+        setDepositGroupId(groupId);
+        setReportGroupId(groupId);
+      }
       setGroupName('');
       setMembers('');
     } else {
@@ -52,8 +55,9 @@ const GroupSavingsPage: React.FC<GroupSavingsPageProps> = ({ userId }) => {
 
   const handleGenerateReport = async () => {
     const response = await apiClient.getGroupReport(reportGroupId);
-    if (response.success && response.report) {
-      setReport(response.report);
+    if (response.success) {
+      const reportData = (response as any).report || JSON.stringify(response, null, 2);
+      setReport(reportData);
     } else {
       setReport('Failed to generate report');
     }

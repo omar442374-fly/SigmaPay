@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import apiClient from '../api/apiClient';
+import { useAuth } from '../contexts/AuthContext';
 
-interface BudgetPageProps {
-  userId: string;
-}
+const BudgetPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
 
-const BudgetPage: React.FC<BudgetPageProps> = ({ userId }) => {
   const [totalAmount, setTotalAmount] = useState('');
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
@@ -29,7 +29,8 @@ const BudgetPage: React.FC<BudgetPageProps> = ({ userId }) => {
     );
 
     if (response.success) {
-      setMessage(`Budget created successfully! Budget ID: ${response.budget?.budgetId}`);
+      const budgetId = (response as any).budgetId || (response as any).budget?.id;
+      setMessage(`Budget created successfully! Budget ID: ${budgetId}`);
     } else {
       setMessage('Failed to create budget');
     }

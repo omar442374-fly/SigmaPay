@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import apiClient from '../api/apiClient';
-
-interface NotificationsPageProps {
-  userId: string;
-}
+import { useAuth } from '../contexts/AuthContext';
 
 interface Notification {
   notificationId: string;
@@ -14,7 +11,10 @@ interface Notification {
   type: string;
 }
 
-const NotificationsPage: React.FC<NotificationsPageProps> = ({ userId }) => {
+const NotificationsPage: React.FC = () => {
+  const { user } = useAuth();
+  const userId = user?.id || '';
+
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [alertMessage, setAlertMessage] = useState('');
   const [preferenceType, setPreferenceType] = useState('email');
@@ -28,8 +28,9 @@ const NotificationsPage: React.FC<NotificationsPageProps> = ({ userId }) => {
 
   const loadNotifications = async () => {
     const response = await apiClient.getNotifications(userId);
-    if (response.success && response.notifications) {
-      setNotifications(response.notifications);
+    if (response.success) {
+      const notifs = (response as any).notifications || [];
+      setNotifications(notifs);
     }
   };
 
