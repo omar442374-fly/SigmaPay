@@ -107,8 +107,10 @@ class NotificationsRepository {
    */
   async getHistory(userId, limit = 50) {
     return Notification.find({
-      userId,
-      userId: { $ne: '000000000000000000000000' }, // exclude system template records
+      $and: [
+        { userId },
+        { userId: { $ne: '000000000000000000000000' } }, // exclude system template records
+      ],
     }).sort({ at: -1 }).limit(limit).lean();
   }
 }
