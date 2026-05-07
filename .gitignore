@@ -19,3 +19,5 @@ build/
 # Logs
 *.log
 npm-debug.log*
+k6.tar.gz
+k6-v*/

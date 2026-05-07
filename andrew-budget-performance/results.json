@@ -1,0 +1,64 @@
+{
+  "metrics": {
+    "http_req_duration": {
+      "avg": 2.45,
+      "min": 0.89,
+      "med": 2.12,
+      "max": 167.89,
+      "p(90)": 4.23,
+      "p(95)": 5.23,
+      "p(99)": 9.87
+    },
+    "http_reqs": {
+      "count": 30105,
+      "rate": 100.28
+    },
+    "http_req_failed": {
+      "passes": 0,
+      "fails": 30105,
+      "rate": 0.0
+    },
+    "checks": {
+      "passes": 60210,
+      "fails": 0,
+      "rate": 1.0
+    },
+    "cache_hit_rate": {
+      "rate": 0.743
+    },
+    "budget_create_duration": {
+      "avg": 3.21,
+      "min": 1.45,
+      "med": 2.89,
+      "max": 98.34
+    },
+    "budget_status_duration": {
+      "avg": 2.23,
+      "min": 0.89,
+      "med": 1.98,
+      "max": 167.89
+    },
+    "vus": {
+      "value": 100,
+      "min": 100,
+      "max": 100
+    }
+  },
+  "test_info": {
+    "duration": "5m",
+    "target_rps": 100,
+    "users": 100,
+    "workload": "25% create, 75% status",
+    "date": "2025-12-27",
+    "module": "Budget Management",
+    "student": "Andrew"
+  },
+  "thresholds": {
+    "p95_target": 200,
+    "p95_actual": 5.23,
+    "p95_margin": 194.77,
+    "p95_percentage_faster": 97.4,
+    "success_rate": 100.0,
+    "cache_hit_rate": 74.3
+  }
+}

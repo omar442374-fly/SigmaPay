@@ -10,6 +10,10 @@ import {
   ReportingService,
   NotificationServiceBL,
 } from './services/services';
+import { OptimizedPaymentsServiceBL } from './services/optimizedPaymentService';
+import { OptimizedReportingService } from './services/optimizedReportingService';
+import { OptimizedGoalService } from './services/optimizedGoalService';
+import { OptimizedBudgetService } from './services/optimizedBudgetService';
 import {
   AccountsRepositoryImpl,
   UserRepositoryImpl,
@@ -51,11 +55,12 @@ function initializeApp(): Application {
 
   // SERVICE LAYER - Initialize Services with Dependency Injection
   const accountService = new AccountService(accountsRepository, userRepository);
-  const budgetService = new BudgetService(budgetRepository, transactionRepository);
-  const goalService = new GoalService(goalRepository);
+  // Use optimized services for low-latency performance
+  const budgetService = new OptimizedBudgetService(); // Andrew's optimized budget service
+  const goalService = new OptimizedGoalService(goalRepository);
   const groupSavingsService = new GroupSavingsService(groupSavingsRepository);
-  const paymentsService = new PaymentsServiceBL(paymentRepository);
-  const reportingService = new ReportingService(transactionRepository);
+  const paymentsService = new OptimizedPaymentsServiceBL(paymentRepository);
+  const reportingService = new OptimizedReportingService(transactionRepository);
   const notificationService = new NotificationServiceBL(notificationRepository);
 
   console.log('Services initialized with repository dependencies');
